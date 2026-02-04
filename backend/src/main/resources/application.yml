@@ -22,5 +22,5 @@ spring:
   jackson:
     time-zone: UTC
 jwt:
-  secret: educator-secret-key-change-later
+  secret: "educator-secret-key-change-later"
   expiration-ms: 3600000

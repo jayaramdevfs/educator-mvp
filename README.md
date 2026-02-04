@@ -100,3 +100,32 @@ Sprint 2 delivered the core structural backbone of the platform.
 ✔ Completed  
 ✔ Tested via Postman  
 ✔ Stable baseline for course and exam attachment
+
+## Sprint 3.1 – Core Course & Lesson Backend Foundation
+
+### Completed
+- Designed and locked Course domain model with:
+  - Difficulty levels
+  - Language support
+  - Estimated duration
+  - Draft / Publish / Archive lifecycle
+- Designed Lesson domain supporting:
+  - Text lessons
+  - Video lessons (external links)
+  - Document lessons
+- Implemented repositories with safe JPA queries
+- Implemented service layer enforcing business rules
+- Added initial admin CourseController with correct entity handling
+- Stabilized Hibernate and JPA initialization
+- Resolved critical build and runtime issues
+
+### Deferred to Sprint 3.2
+- Lesson REST APIs
+- Student-facing course browse APIs
+- Security bindings
+- Sprint-wide verification
+
+Status: ✅ Completed and committed as Sprint 3.1
+
+
+

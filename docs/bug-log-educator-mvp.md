@@ -71,3 +71,17 @@ Confirmed security behavior is correct
 Role-based enforcement deferred to later sprint (planned)
 
 👉 No unresolved bugs from Sprint 2.
+
+## Sprint 3.1 Bug Log
+
+### Resolved Bugs
+- Hibernate ExceptionInInitializerError caused by non-null fields without defaults
+- Lombok incompatibility with unsupported JDK versions
+- Illegal manual assignment of JPA entity IDs
+- Package-path mismatches causing compilation failures
+- Missing setters in domain entities
+- Lesson service compilation failures due to entity misalignment
+
+### Notes
+All identified issues were resolved without compromising domain design.
+The backend now builds and starts reliably with Java 17.
