@@ -74,3 +74,29 @@ Login returns a JWT token for authenticated access.
 ## Sprint Status
 - Sprint 1: Completed Successfully
 - Next Sprint: Infinite Hierarchy System (Sprint 2)
+
+
+## Sprint 2 – Infinite Hierarchy Backend
+
+Sprint 2 delivered the core structural backbone of the platform.
+
+### Key Features
+- Infinite, self-referencing hierarchy with unlimited depth
+- Slug-based identifiers for stable routing and future SEO
+- Localization-ready fields (English base)
+- Versioning, visibility flags, and soft delete
+- Audit fields for governance
+
+### Business Rules
+- Cycle prevention in hierarchy
+- Maximum depth enforcement
+- Deterministic ordering of nodes
+
+### APIs
+- Admin APIs for managing hierarchy nodes
+- Public read-only APIs for browsing hierarchy
+
+### Status
+✔ Completed  
+✔ Tested via Postman  
+✔ Stable baseline for course and exam attachment

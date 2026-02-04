@@ -1,7 +1,8 @@
+This document captures the major bugs encountered during all the Sprints 
+and their resolutions. Primary tracking is done via GitHub Issues.
+
 # Bug Log – Sprint 1
 
-This document captures the major bugs encountered during Sprint 1
-and their resolutions. Primary tracking is done via GitHub Issues.
 
 ---
 
@@ -56,3 +57,17 @@ Fix:
 - Disabled HTTP Basic authentication explicitly
 
 Status: Fixed
+
+# Bug Log – Sprint 2
+
+## Bug 4: Encountered 403 Forbidden on admin hierarchy endpoints
+
+🔹 Resolution
+
+Temporarily permitted /api/admin/hierarchy/** in security config
+
+Confirmed security behavior is correct
+
+Role-based enforcement deferred to later sprint (planned)
+
+👉 No unresolved bugs from Sprint 2.
