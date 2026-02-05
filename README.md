@@ -127,5 +127,24 @@ Sprint 2 delivered the core structural backbone of the platform.
 
 Status: ✅ Completed and committed as Sprint 3.1
 
+## Sprint 3.2 – Lesson APIs (Completed)
+
+Sprint 3.2 focused on completing the Lesson domain at API and service levels.
+
+### Completed Work
+- Lesson creation APIs for Admin / Instructor
+- Public lesson retrieval APIs for Students
+- Deterministic lesson ordering using orderIndex
+- Soft delete enforcement
+- Service layer verification without refactoring
+
+### Architectural Notes
+- Lesson language inherits from Course
+- Infinite hierarchy support deferred to Sprint 4
+- APIs designed for Web and future Mobile clients
+
+### Status
+Sprint 3.2 is completed, stable, and ready for hierarchy expansion.
+
 
 

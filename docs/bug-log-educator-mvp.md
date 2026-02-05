@@ -85,3 +85,10 @@ Role-based enforcement deferred to later sprint (planned)
 ### Notes
 All identified issues were resolved without compromising domain design.
 The backend now builds and starts reliably with Java 17.
+
+### Sprint 3.2
+
+- Issue: Potential duplication of LessonService logic during sprint execution
+  - Root Cause: Service logic already implemented in earlier sprint
+  - Resolution: Verified existing implementation and avoided unnecessary changes
+  - Status: Closed
