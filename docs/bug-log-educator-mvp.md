@@ -92,3 +92,24 @@ The backend now builds and starts reliably with Java 17.
   - Root Cause: Service logic already implemented in earlier sprint
   - Resolution: Verified existing implementation and avoided unnecessary changes
   - Status: Closed
+## Sprint 4 Bug Log (Append-Only)
+
+### S4-B1 – Admin APIs returned 403
+**Cause:** JWT token not injected into SecurityContext  
+**Fix:** Added JwtAuthenticationFilter to SecurityFilterChain  
+**Status:** Resolved
+
+### S4-B2 – Lesson admin APIs always returned 403
+**Cause:** Method security enabled without UserDetailsService  
+**Fix:** Introduced CustomUserDetails and CustomUserDetailsService  
+**Status:** Resolved
+
+### S4-B3 – Conflicting authorization checks
+**Cause:** Duplicate authority evaluation between JWT roles and method security  
+**Fix:** Unified security using URL-based admin protection  
+**Status:** Resolved
+
+### S4-B4 – Lesson creation failed with 500 error
+**Cause:** NOT NULL constraint violation on lessons.created_at  
+**Fix:** Added Hibernate @CreationTimestamp and @UpdateTimestamp  
+**Status:** Resolved

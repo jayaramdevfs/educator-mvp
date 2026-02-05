@@ -147,4 +147,20 @@ Sprint 3.2 focused on completing the Lesson domain at API and service levels.
 Sprint 3.2 is completed, stable, and ready for hierarchy expansion.
 
 
+## Sprint 4 – Admin Content Management & Security Stabilization
+
+Sprint 4 delivers a stable, production-ready foundation for admin-managed content.
+
+### Highlights
+- Stateless JWT authentication with role-based admin access
+- Secure admin APIs for course and lesson creation
+- Infinite lesson hierarchy with deterministic ordering
+- Hibernate-managed audit fields for lessons
+- Public lesson tree API for learner-facing consumption
+
+### Status
+Sprint 4 is completed and verified.  
+All security, persistence, and hierarchy flows are stable.
+
+The platform is now ready for learner progress tracking and content consumption features.
 

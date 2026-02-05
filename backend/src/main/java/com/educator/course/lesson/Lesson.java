@@ -2,55 +2,99 @@ package com.educator.course.lesson;
 
 import com.educator.course.Course;
 import jakarta.persistence.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
-@Table(
-        name = "lessons",
-        indexes = {
-                @Index(name = "idx_lesson_course", columnList = "course_id"),
-                @Index(name = "idx_lesson_order", columnList = "order_index")
-        }
-)
+@Table(name = "lessons")
 public class Lesson {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    /**
+     * Course to which this lesson belongs
+     */
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "course_id", nullable = false)
     private Course course;
 
+    /**
+     * Self-referencing parent lesson (NULL for root lessons)
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_lesson_id")
+    private Lesson parentLesson;
+
+    /**
+     * Child lessons (infinite depth)
+     */
+    @OneToMany(
+            mappedBy = "parentLesson",
+            cascade = CascadeType.ALL,
+            orphanRemoval = false
+    )
+    @OrderBy("orderIndex ASC")
+    private List<Lesson> childLessons = new ArrayList<>();
+
+    /**
+     * Hierarchy path (e.g. /course/12/lesson/5/lesson/18)
+     */
+    @Column(name = "path", length = 512, nullable = false)
+    private String path;
+
+    /**
+     * Depth level (0 = root lesson)
+     */
+    @Column(name = "depth_level", nullable = false)
+    private int depthLevel;
+
+    /**
+     * Lesson type (TEXT / VIDEO / DOCUMENT)
+     */
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
+    @Column(nullable = false)
     private LessonType type;
 
+    /**
+     * Order within same parent
+     */
     @Column(name = "order_index", nullable = false)
     private int orderIndex;
 
+    /**
+     * Content fields
+     */
     @Column(columnDefinition = "TEXT")
     private String textContent;
 
-    @Column(length = 500)
     private String videoUrl;
 
-    @Column(length = 500)
     private String documentUrl;
 
+    /**
+     * Soft delete flag
+     */
     @Column(nullable = false)
     private boolean isDeleted = false;
 
-    @Column(nullable = false, updatable = false)
+    /**
+     * Audit fields
+     */
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
-    @Column(nullable = false)
+    @UpdateTimestamp
+    @Column(name = "updated_at")
     private Instant updatedAt;
 
-    /* =======================
-       GETTERS & SETTERS
-       ======================= */
+    /* -------------------- Getters & Setters -------------------- */
 
     public Long getId() {
         return id;
@@ -62,6 +106,34 @@ public class Lesson {
 
     public void setCourse(Course course) {
         this.course = course;
+    }
+
+    public Lesson getParentLesson() {
+        return parentLesson;
+    }
+
+    public void setParentLesson(Lesson parentLesson) {
+        this.parentLesson = parentLesson;
+    }
+
+    public List<Lesson> getChildLessons() {
+        return childLessons;
+    }
+
+    public String getPath() {
+        return path;
+    }
+
+    public void setPath(String path) {
+        this.path = path;
+    }
+
+    public int getDepthLevel() {
+        return depthLevel;
+    }
+
+    public void setDepthLevel(int depthLevel) {
+        this.depthLevel = depthLevel;
     }
 
     public LessonType getType() {
@@ -118,17 +190,5 @@ public class Lesson {
 
     public Instant getUpdatedAt() {
         return updatedAt;
-    }
-
-    @PrePersist
-    protected void onCreate() {
-        Instant now = Instant.now();
-        this.createdAt = now;
-        this.updatedAt = now;
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        this.updatedAt = Instant.now();
     }
 }

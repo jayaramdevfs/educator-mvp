@@ -11,7 +11,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/admin/lesson-queries")
-@PreAuthorize("hasAnyRole('ADMIN','INSTRUCTOR')")
+//@PreAuthorize("hasAnyRole('ADMIN','INSTRUCTOR')")
 public class LessonAdminQueryController {
 
     private final LessonService lessonService;
