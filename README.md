@@ -1,259 +1,179 @@
-# Educator Platform — Backend
-## Sprint 6 README (Authoritative)
+# Educator Platform
 
-This document captures the **state of the Educator Platform backend up to the end of Sprint 6**.
-It supersedes the Sprint 5 README and acts as the **official handover document into Sprint 7**.
+A full-stack Learning Management System (LMS) for online course delivery, assessment, enrollment tracking, and certification.
 
 ---
 
-## 📌 Project Status (as of Sprint 6)
+## Project Status
 
-- **Current Sprint:** Sprint 6 — ✅ Completed & Exit-Verified  
-- **Next Sprint:** Sprint 7 — Monetization & Deployment  
-- **Codebase State:** Clean, compiling, verified  
-- **Sprint Discipline:** Strictly followed (no scope creep)
+| Dimension | State |
+|---|---|
+| **Backend (Sprint 1-6)** | Complete, stable, running. 119 Java files, 23 DB tables, 30+ REST endpoints. APIs contract-frozen. |
+| **Frontend (Sprint 7+)** | Not yet started. Planned: Next.js 15, TypeScript, Tailwind CSS, shadcn/ui. |
+| **Current Sprint** | Sprint 7 -- Local Setup & Foundation |
 
-Sprint 6 focused on **foundations, correctness, and readiness**, not feature rush.
-
----
-
-## 🧠 Core Principles (Locked)
-
-- Strict sprint-by-sprint execution
-- Stateless JWT-based authentication
-- URL-pattern–based authorization only
-- Clear separation of:
-  - Admin
-  - Instructor
-  - Learner
-  - Public APIs
-- Deterministic, NON-AI backend logic
-- PostgreSQL + JPA/Hibernate only
-- Soft deletes and audit fields everywhere
-- **Language governance:** User may speak Telugu, system responses are English-only
+> **Source of Truth:** All architecture, sprint plans, deployment strategy, and feature tracking live in
+> [`MASTER_PLAN.md`](./MASTER_PLAN.md). This README is the quick-start guide only.
 
 ---
 
-## 🏗️ Technology Stack
+## Tech Stack
 
-- Java 17
-- Spring Boot
-- Spring Security (JWT, Stateless)
-- JPA / Hibernate
-- PostgreSQL
-- Maven
-- Docker (local infra)
+| Layer | Technology |
+|---|---|
+| **Backend** | Java 17, Spring Boot 4.0.2, Spring Security + JWT, JPA/Hibernate, PostgreSQL 15, Maven, Lombok |
+| **Frontend** | Next.js 15 (App Router), TypeScript, Tailwind CSS, shadcn/ui, TanStack Query, Zustand |
+| **Infrastructure** | Docker, GitHub Actions (CI/CD planned) |
 
 ---
 
-## 🔐 Security Model (Stable)
+## Quick Start -- Backend
 
-| API Pattern | Access |
-|------------|--------|
-| `/api/public/**` | Open |
-| `/api/auth/**` | Authentication |
-| `/api/admin/**` | ADMIN only |
-| `/api/learner/**` | Authenticated STUDENT |
+### Prerequisites
 
-❌ No session-based auth  
-❌ No method-level security  
+- Java 17 (JDK)
+- Docker & Docker Compose
+- Maven (or use the included wrapper `./mvnw`)
 
-All Sprint 6 APIs are **contract-frozen**.
+### Steps
 
----
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd Educator_replannned
+   ```
 
-## 👥 Users & Roles
+2. **Start PostgreSQL via Docker**
+   ```bash
+   docker run -d \
+     --name educator-db \
+     -e POSTGRES_DB=educator \
+     -e POSTGRES_USER=educator \
+     -e POSTGRES_PASSWORD=educator \
+     -p 5432:5432 \
+     postgres:15
+   ```
 
-Supported roles:
-- `ROLE_ADMIN`
-- `ROLE_INSTRUCTOR`
-- `ROLE_STUDENT`
+3. **Build and run the backend**
+   ```bash
+   cd backend
+   ./mvnw clean compile
+   ./mvnw spring-boot:run
+   ```
 
-Rules:
-- ADMIN implicitly has instructor privileges
-- Roles are **NOT** used for monetization
-- Monetization logic deferred to Sprint 7
-
----
-
-## 📚 Courses — NON-AI Course Engine (Sprint 6)
-
-Sprint 6 introduced a **rule-based Course Engine**.
-
-Capabilities:
-- Deterministic course structure validation
-- Admin-defined sequencing rules
-- Visibility & enable/disable rules
-- Pre-publish validation hooks
-
-❌ No AI generation  
-❌ No personalization  
+4. **Verify**
+   - Application starts on `http://localhost:8080`
+   - Roles seeded automatically (STUDENT, INSTRUCTOR, ADMIN)
+   - Test: `POST http://localhost:8080/api/auth/register` with `{"email":"test@test.com","password":"Test1234"}`
 
 ---
 
-## 📘 Lessons — Hierarchy + Media Readiness
+## Quick Start -- Frontend
 
-Lesson hierarchy remains **path + depthLevel** (locked).
+> Frontend development begins in Sprint 7. These steps apply once the frontend is scaffolded.
 
-Lesson types:
-- TEXT
-- VIDEO (reference-only)
-- PDF (reference-only)
-- EXAM
+### Prerequisites
 
-Media readiness added:
-- Metadata-only media references
-- External / internal source flags
-- No uploads
-- No storage or streaming
+- Node.js 20+ (LTS)
+- npm 10+
 
----
+### Steps
 
-## 🧪 Exams — NON-AI Exam Engine (Sprint 6)
+1. **Install dependencies**
+   ```bash
+   cd frontend
+   npm install
+   ```
 
-Exam engine is now **deterministic and auditable**.
+2. **Start the dev server**
+   ```bash
+   npm run dev
+   ```
 
-Supports:
-- MCQ-based exams
-- One exam per course
-- Exam lifecycle:
-  - DRAFT
-  - PUBLISHED
-  - ARCHIVED
-- Deterministic question selection
-- Fixed scoring & pass rules
-
-### Deferred Exam Enhancements (Sprint 7)
-- Negative marking (configurable)
-- Student-optional negative marking
-- Answer explanations post-exam
+3. **Verify** -- Opens on `http://localhost:3000`
 
 ---
 
-## 🧾 Enrollment, Completion & Certificates
+## Project Structure
 
-### Completion Engine
-- Lesson completion thresholds
-- Exam pass/fail rules
-- Enrollment state transitions:
-  - ACTIVE → COMPLETED
-
-### Certificates
-- Certificate data model created
-- Eligibility rules defined
-- ❌ No PDF generation (deferred)
-
----
-
-## 🔔 Notifications (Sprint 6)
-
-- Notification persistence layer (DB-only)
-- Supported events:
-  - COURSE_COMPLETED
-  - EXAM_PASSED
-  - EXAM_FAILED
-  - CERTIFICATE_ELIGIBLE
-- Read / unread tracking
-- User association
-
-❌ No delivery (email/SMS/push)
-
----
-
-## 🏠 Homepage Architecture (Sprint 6 Major Deliverable)
-
-Homepage is now **fully dynamic and admin-controlled**.
-
-Model:
-- HomepageSection (container)
-- SectionLayout (behavior)
-- SectionBlock (content unit)
-- BlockConfig (dynamic config)
-
-Characteristics:
-- Deterministic ordering
-- Mixed content (courses, exams, banners, CTAs)
-- Frontend-agnostic
-- No CSS or UI logic in backend
-
----
-
-## 💼 Monetization — Design Locked (Sprint 6)
-
-### Platform-First Monetization Model
-- Platform collects all payments
-- Admin controls final pricing
-- Instructor may suggest price only
-- Revenue sharing is policy-driven
-- Historical transactions immutable
-
-❌ No implementation in Sprint 6  
-➡️ Implemented in Sprint 7
-
----
-
-## 🗄️ Database State & Snapshots
-
-Snapshots stored under:
 ```
-backend/db/snapshots/
+Educator_replannned/
+  MASTER_PLAN.md              # Single source of truth (architecture, sprints, deployment)
+  README.md                   # This file (quick-start guide)
+  TECHNICAL_DESIGN_DOCUMENT.md  # Historical TDD (Sprint 1-6, superseded by MASTER_PLAN)
+  HANDOVER_REVIEW.md          # Historical audit (superseded by MASTER_PLAN)
+  FULL_PRODUCT_EXECUTION_PLAN.md  # Historical forward plan (superseded by MASTER_PLAN)
+  backend/
+    pom.xml                   # Maven build
+    src/main/java/com/educator/
+      auth/                   # Authentication (login, register)
+      course/                 # Course + lesson hierarchy
+      enrollment/             # Enrollment + lesson progress
+      exam/                   # Exams, attempts, auto-grading
+      engine/                 # Stateless rule engines
+      hierarchy/              # Category taxonomy tree
+      homepage/               # Dynamic CMS homepage
+      notification/           # Notification persistence
+      automation/             # Automation rules framework
+      certificate/            # Certificate entity + status
+      completion/             # Course completion records
+      media/                  # Media reference metadata
+      importer/               # Import framework (abstractions)
+      security/               # JWT filter, security config
+      users/                  # User entity
+      roles/                  # Role entity + initializer
+    src/main/resources/
+      application.yml         # Dev config (port 8080, local PostgreSQL)
+      application-prod.yml    # Production profile (env vars)
+    db/snapshots/             # Database schema snapshots
+  frontend/                   # Next.js app (Sprint 7+)
 ```
 
-- `sprint5_baseline_data.sql` — Historical reference
-- `sprint6_baseline.sql` — **Deployment baseline**
+---
 
-Sprint 6 snapshot:
-- Schema-only
-- No data
-- Docker-generated
-- Exit-verified
+## API Overview
+
+All endpoints are documented in detail in [MASTER_PLAN.md, Section 6](./MASTER_PLAN.md#6-api-endpoint-reference).
+
+| Group | Base Path | Auth | Endpoints |
+|---|---|---|---|
+| Auth | `/api/auth` | Public | 2 (register, login) |
+| Public | `/api/public`, `/api/hierarchy` | Public | 5 (courses, lessons, homepage, taxonomy) |
+| Learner | `/api/learner` | Authenticated | 5 (enrollment, progress) |
+| Admin | `/api/admin` | ADMIN role | 18 (courses, lessons, exams, taxonomy, homepage) |
+| Instructor | `/api/instructor` | Authenticated | 1 (exam view) |
+| Student Exam | `/api/student` | Authenticated | 2 (start, submit exam) |
 
 ---
 
-## 🚀 Deployment Plan
+## Documentation
 
-- ❌ No deployment in Sprint 6
-- ✅ **Deployment planned in Sprint 7 (Web)**
-- Mobile apps deferred post Sprint 7
+Everything lives in [`MASTER_PLAN.md`](./MASTER_PLAN.md):
 
-Sprint 6 ensures **deployment readiness**, not execution.
-
----
-
-## 🗺️ Sprint Roadmap (Updated)
-
-🟩 Sprint 1 — Foundation & Architecture  
-🟩 Sprint 2 — Authentication & Authorization  
-🟩 Sprint 3 — Course & Lesson Domain  
-🟩 Sprint 4 — Security Stabilization & Public APIs  
-🟩 Sprint 5 — Enrollment & Progress  
-🟩 Sprint 6 — Foundations, Engines & Readiness  
-
-🟨 Sprint 7 — Monetization & Deployment  
-🟨 Sprint 8 — Observability, Analytics, Enhancements  
-🟨 Sprint 9+ — Mobile Applications
+| Topic | Section |
+|---|---|
+| Architecture & tech stack | Part I, Sections 2-3 |
+| All entities & database schema | Part I, Section 5 |
+| Complete API reference | Part I, Section 6 |
+| Business logic engines | Part I, Section 7 |
+| Known gaps & security issues | Part II, Section 12 |
+| Frontend architecture & design system | Part III, Sections 13-14 |
+| Sprint 7-14 task breakdowns | Part III, Sections 16-23 |
+| Deployment & production checklist | Part IV, Sections 24-30 |
+| Adding new features / amendments | Part V, Sections 31-35 |
 
 ---
 
-## 📦 Handover to Sprint 7
+## Key Constraints
 
-Sprint 7 will start with:
-- Stable, frozen APIs
-- Deterministic NON-AI engines
-- Deployment-ready DB schema
-- Locked monetization design
-- Mandatory Exit & Handover documentation process
-
----
-
-## ✅ Sprint 6 Closure Statement
-
-Sprint 6 is **EXIT-COMPLETE, STABLE, and VERIFIED**.
-
-This README is the **final authoritative backend document**
-approved for:
-- Git commit
-- GitHub publication
-- Sprint 7 entry
+- Sprint 1-6 backend code is **frozen** -- do not modify
+- Stateless JWT auth only (no sessions, no @PreAuthorize)
+- Soft deletes everywhere (no hard deletes)
+- Deterministic logic only (no AI/ML)
+- Mixed primary keys: `Long` (Sprint 1-5 entities) vs `UUID` (Sprint 6 entities)
 
 ---
+
+## License
+
+*To be determined.*
