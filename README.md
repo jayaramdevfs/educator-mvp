@@ -8,9 +8,9 @@ A full-stack Learning Management System (LMS) for online course delivery, assess
 
 | Dimension | State |
 |---|---|
-| **Backend (Sprint 1-6)** | Complete, stable, running. 119 Java files, 23 DB tables, 30+ REST endpoints. APIs contract-frozen. |
-| **Frontend (Sprint 7+)** | Not yet started. Planned: Next.js 15, TypeScript, Tailwind CSS, shadcn/ui. |
-| **Current Sprint** | Sprint 7 -- Local Setup & Foundation |
+| **Backend (Sprint 1-7)** | Complete, stable, running. 120 Java files, 23 DB tables, 30+ REST endpoints. APIs contract-frozen. CertificateRepository added in Sprint 7. |
+| **Frontend (Sprint 7)** | Scaffolded. Next.js 15, TypeScript, Tailwind CSS, shadcn/ui, TanStack Query, Zustand installed. Placeholder pages and route groups created. |
+| **Current Sprint** | Sprint 8 -- Security Hardening & Backend Fixes |
 
 > **Source of Truth:** All architecture, sprint plans, deployment strategy, and feature tracking live in
 > [`MASTER_PLAN.md`](./MASTER_PLAN.md). This README is the quick-start guide only.
@@ -70,7 +70,7 @@ A full-stack Learning Management System (LMS) for online course delivery, assess
 
 ## Quick Start -- Frontend
 
-> Frontend development begins in Sprint 7. These steps apply once the frontend is scaffolded.
+> Frontend scaffolded in Sprint 7. The dev server runs on localhost:3000.
 
 ### Prerequisites
 
@@ -126,7 +126,7 @@ Educator_replannned/
       application.yml         # Dev config (port 8080, local PostgreSQL)
       application-prod.yml    # Production profile (env vars)
     db/snapshots/             # Database schema snapshots
-  frontend/                   # Next.js app (Sprint 7+)
+  frontend/                   # Next.js 15 app (scaffolded in Sprint 7)
 ```
 
 ---
@@ -166,7 +166,7 @@ Everything lives in [`MASTER_PLAN.md`](./MASTER_PLAN.md):
 
 ## Key Constraints
 
-- Sprint 1-6 backend code is **frozen** -- do not modify
+- Sprint 1-7 backend code is **frozen** -- do not modify (except Sprint 8 security fixes per MASTER_PLAN)
 - Stateless JWT auth only (no sessions, no @PreAuthorize)
 - Soft deletes everywhere (no hard deletes)
 - Deterministic logic only (no AI/ML)

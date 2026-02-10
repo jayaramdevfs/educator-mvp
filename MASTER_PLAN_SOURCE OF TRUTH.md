@@ -7,10 +7,10 @@
 
 | Field | Value |
 |---|---|
-| **Version** | 2.0 |
+| **Version** | 2.1 |
 | **Date** | 2026-02-10 |
-| **Baseline** | Sprint 1 through Sprint 6 (Complete, Contract-Frozen) |
-| **Forward Scope** | Sprint 7 through Sprint 14 + Post-Production |
+| **Baseline** | Sprint 1 through Sprint 7 (Complete, Contract-Frozen) |
+| **Forward Scope** | Sprint 8 through Sprint 14 + Post-Production |
 | **Status** | Active -- Living Document |
 | **Supersedes** | TDD v1.0, README Sprint 6, Handover Review, Full Product Execution Plan |
 
@@ -656,9 +656,11 @@ Sort by Topic -> Difficulty -> QuestionID, then select by distribution
 
 ## 12. Known Gaps & Deviations
 
-### 12.1 Missing File (1 of 120)
+### 12.1 Missing File (1 of 120) — RESOLVED
 
-`certificate/repository/CertificateRepository.java` -- TDD Sections 8.7 and 14.16 specify this should exist. The Certificate entity and CertificateStatus enum exist. Only the repository interface is missing. **Fix: 15 minutes.**
+~~`certificate/repository/CertificateRepository.java` -- TDD Sections 8.7 and 14.16 specify this should exist. The Certificate entity and CertificateStatus enum exist. Only the repository interface is missing.~~
+
+**Fixed in Sprint 7** (BUG-001). `CertificateRepository extends JpaRepository<Certificate, UUID>` added. File count now 120/120.
 
 ### 12.2 Security Gaps (Development-Only Configuration)
 
@@ -683,7 +685,7 @@ These are expected development-environment defaults. They are addressed in Sprin
 
 | Gap | Resolution Sprint |
 |---|---|
-| No frontend (zero frontend code) | Sprint 7-12 |
+| No frontend logic (scaffolded in Sprint 7, no functional pages) | Sprint 8-12 |
 | No tests (1 context-load test only) | Sprint 8-13 |
 | No CI/CD pipeline | Sprint 9 |
 | No Docker production configuration | Sprint 13 |
@@ -913,58 +915,73 @@ Navigation Bar, Sidebar, Auth Guard, JWT Token Manager, API Client (Axios), Data
 
 ## 16. Sprint 7 -- Local Setup & Foundation
 
+**Status: CLOSED (Immutable) -- Completed 2026-02-10**
+
 **Objective:** Establish development environment, verify backend, scaffold frontend, set up tooling.
 
 ### Backend Tasks
 
-| # | Task | Details |
-|---|---|---|
-| B0.1 | Verify backend builds and starts | `mvn clean compile`, `mvn spring-boot:run` |
-| B0.2 | Create local PostgreSQL database | Docker compose with `educator` database |
-| B0.3 | Run application and verify startup | Confirm RoleInitializer seeds roles, verify endpoints |
-| B0.4 | Test all existing APIs with Postman | Create full API collection |
-| B0.5 | Create `CertificateRepository.java` | `public interface CertificateRepository extends JpaRepository<Certificate, UUID> {}` |
-| B0.6 | Document all API response shapes | Save as TypeScript types reference |
+| # | Task | Details | Status |
+|---|---|---|---|
+| B0.1 | Verify backend builds and starts | `mvn clean compile`, `mvn spring-boot:run` | DONE |
+| B0.2 | Create local PostgreSQL database | Docker compose with `educator` database | DONE |
+| B0.3 | Run application and verify startup | Confirm RoleInitializer seeds roles, verify endpoints | DONE |
+| B0.4 | Test all existing APIs with Postman | Create full API collection | DONE |
+| B0.5 | Create `CertificateRepository.java` | `public interface CertificateRepository extends JpaRepository<Certificate, UUID> {}` | DONE |
+| B0.6 | Document all API response shapes | Save as TypeScript types reference | DONE |
 
 ### Frontend Tasks
 
-| # | Task | Details |
-|---|---|---|
-| F0.1 | Initialize Next.js 15 project | `npx create-next-app@latest frontend --typescript --tailwind --app --src-dir` |
-| F0.2 | Install core dependencies | shadcn/ui, @tanstack/react-query, zustand, react-hook-form, zod, axios, lucide-react |
-| F0.3 | Configure Tailwind design tokens | Custom colors, typography, spacing from Design System |
-| F0.4 | Set up project structure | app/, components/, lib/, styles/ per plan |
-| F0.5 | Create TypeScript types | All backend entity types, enum types, API request/response types |
-| F0.6 | Create API client | Axios instance with base URL, JWT interceptor, error handler |
-| F0.7 | Create auth store (Zustand) | Token storage, user state, login/logout actions |
-| F0.8 | Create route layout groups | (public), (learner), (admin), (instructor) with placeholder pages |
-| F0.9 | Install shadcn/ui components | Button, Input, Card, Dialog, Table, Badge, Toast, Dropdown, Tabs |
+| # | Task | Details | Status |
+|---|---|---|---|
+| F0.1 | Initialize Next.js 15 project | `npx create-next-app@latest frontend --typescript --tailwind --app --src-dir` | DONE |
+| F0.2 | Install core dependencies | shadcn/ui, @tanstack/react-query, zustand, react-hook-form, zod, axios, lucide-react | DONE |
+| F0.3 | Configure Tailwind design tokens | Custom colors, typography, spacing from Design System | DONE |
+| F0.4 | Set up project structure | app/, components/, lib/, styles/ per plan | DONE |
+| F0.5 | Create TypeScript types | All backend entity types, enum types, API request/response types | DONE |
+| F0.6 | Create API client | Axios instance with base URL, JWT interceptor, error handler | DONE |
+| F0.7 | Create auth store (Zustand) | Token storage, user state, login/logout actions | DONE |
+| F0.8 | Create route layout groups | (public), (learner), (admin), (instructor) with placeholder pages | DONE |
+| F0.9 | Install shadcn/ui components | Button, Input, Card, Dialog, Table, Badge, Toast, Dropdown, Tabs | DONE |
 
 ### Testing Tasks
 
-| # | Task | Details |
-|---|---|---|
-| T0.1 | Set up backend test infrastructure | Verify `mvn test` runs existing context-load test |
-| T0.2 | Set up frontend test infrastructure | Install vitest, @testing-library/react, msw |
+| # | Task | Details | Status |
+|---|---|---|---|
+| T0.1 | Set up backend test infrastructure | Verify `mvn test` runs existing context-load test | DONE |
+| T0.2 | Set up frontend test infrastructure | Install vitest, @testing-library/react, msw | DONE |
 
 ### Deployment Tasks
 
-| # | Task | Details |
-|---|---|---|
-| D0.1 | Create `docker-compose.yml` for local dev | PostgreSQL 15, backend, frontend |
-| D0.2 | Initialize Git branching strategy | main (production), develop (integration), feature branches |
+| # | Task | Details | Status |
+|---|---|---|---|
+| D0.1 | Create `docker-compose.yml` for local dev | PostgreSQL 15, backend, frontend | DONE |
+| D0.2 | Initialize Git branching strategy | main (production), develop (integration), feature branches | DONE |
 
 ### Exit Criteria
 
-- [ ] Backend starts on localhost:8080, all endpoints respond
-- [ ] All APIs tested via Postman with documented response shapes
-- [ ] CertificateRepository.java exists, backend compiles
-- [ ] Frontend scaffolded on localhost:3000 with placeholder pages
-- [ ] TypeScript types match backend entities
-- [ ] API client can call backend
-- [ ] Design tokens configured in Tailwind
-- [ ] shadcn/ui base components installed
-- [ ] Docker compose brings up full local environment
+- [x] Backend starts on localhost:8080, all endpoints respond
+- [x] All APIs tested via Postman with documented response shapes
+- [x] CertificateRepository.java exists, backend compiles
+- [x] Frontend scaffolded on localhost:3000 with placeholder pages
+- [x] TypeScript types match backend entities
+- [x] API client can call backend
+- [x] Design tokens configured in Tailwind
+- [x] shadcn/ui base components installed
+- [x] Docker compose brings up full local environment
+
+### Sprint 7 Delivered Artifacts
+
+| Artifact | Verified |
+|---|---|
+| Backend build & runtime | Yes |
+| Database connectivity (Docker + PostgreSQL) | Yes |
+| Missing CertificateRepository added | Yes |
+| API sanity checks passed (Postman) | Yes |
+| Sprint 6 database snapshot created & preserved | Yes |
+| Frontend scaffold created (Next.js + TS + Tailwind) | Yes |
+| No unauthorized file changes | Yes |
+| No refactors / no new features | Yes |
 
 ---
 
@@ -1724,6 +1741,8 @@ IMPLEMENTED
 | Date | Version | Change | Reason |
 |---|---|---|---|
 | 2026-02-10 | 2.0 | Initial Master Plan created | Consolidation of TDD v1.0, Handover Review, Execution Plan, README into single source of truth |
+| 2026-02-10 | 2.1 | Sprint 7 closed; baseline updated to Sprint 1-7 | Sprint 7 fully executed: backend verified, CertificateRepository added, frontend scaffolded, DB snapshot preserved, all exit criteria met |
+| 2026-02-10 | 2.1 | Section 12.1 marked RESOLVED; Section 12.3 updated; BUG_LOG restructured | CertificateRepository fixed in Sprint 7; Bug Log consolidated with Sprint 8 readiness mapping |
 
 ---
 
