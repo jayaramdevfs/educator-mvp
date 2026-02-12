@@ -2,6 +2,7 @@ package com.educator.exam.controller;
 
 import com.educator.exam.entity.Exam;
 import com.educator.exam.service.ExamService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,7 +27,7 @@ public class AdminExamController {
      * Create a new exam for a course.
      */
     @PostMapping
-    public ResponseEntity<Exam> createExam(@RequestBody Exam exam) {
+    public ResponseEntity<Exam> createExam(@Valid @RequestBody Exam exam) {
         return ResponseEntity.ok(examService.createExam(exam));
     }
 

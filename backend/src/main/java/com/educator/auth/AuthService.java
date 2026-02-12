@@ -7,8 +7,13 @@ import com.educator.users.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.regex.Pattern;
+
 @Service
 public class AuthService {
+
+    private static final Pattern STRONG_PASSWORD_PATTERN =
+            Pattern.compile("^(?=.*[A-Z])(?=.*\\d).{8,}$");
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
@@ -31,6 +36,12 @@ public class AuthService {
 
         if (userRepository.existsByEmail(email)) {
             throw new IllegalArgumentException("Email already registered");
+        }
+
+        if (rawPassword == null || !STRONG_PASSWORD_PATTERN.matcher(rawPassword).matches()) {
+            throw new IllegalArgumentException(
+                    "Password must be at least 8 characters and include at least one uppercase letter and one digit"
+            );
         }
 
         User user = new User(

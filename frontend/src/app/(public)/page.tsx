@@ -16,6 +16,12 @@ export default function PublicHomePage() {
         </p>
         <div className="mt-8 flex flex-wrap gap-3">
           <Link
+            className="rounded-[var(--radius-md)] bg-[var(--accent)] px-4 py-2 text-sm font-medium text-[var(--accent-foreground)]"
+            href="/login"
+          >
+            Login
+          </Link>
+          <Link
             className="rounded-[var(--radius-md)] bg-[var(--primary)] px-4 py-2 text-sm font-medium text-[var(--primary-foreground)]"
             href="/learner"
           >
@@ -38,4 +44,3 @@ export default function PublicHomePage() {
     </main>
   );
 }
-

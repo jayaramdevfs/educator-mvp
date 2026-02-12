@@ -5,6 +5,7 @@ import com.educator.auth.dto.LoginRequest;
 import com.educator.auth.dto.RegisterRequest;
 import com.educator.security.JwtUtil;
 import com.educator.users.User;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,7 +25,7 @@ public class AuthController {
      * Register new user (STUDENT by default)
      */
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
+    public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request) {
 
         authService.register(
                 request.getEmail(),
@@ -38,7 +39,7 @@ public class AuthController {
      * Login user and return JWT
      */
     @PostMapping("/login")
-    public ResponseEntity<JwtResponse> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<JwtResponse> login(@Valid @RequestBody LoginRequest request) {
 
         User user = authService.authenticate(
                 request.getEmail(),

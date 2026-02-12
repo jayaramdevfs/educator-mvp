@@ -3,9 +3,9 @@ server:
 
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/educator?options=-c%20TimeZone=UTC
-    username: educator
-    password: educator
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:educator}?options=-c%20TimeZone=UTC
+    username: ${DB_USERNAME:educator}
+    password: ${DB_PASSWORD:educator}
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -22,7 +22,7 @@ spring:
   jackson:
     time-zone: UTC
 jwt:
-  secret: "educator-secret-key-change-later"
+  secret: ${JWT_SECRET:educator-secret-key-change-later}
   expiration-ms: 3600000
 
 app:
