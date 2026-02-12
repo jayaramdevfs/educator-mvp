@@ -3,8 +3,12 @@ package com.educator.enrollment.controller;
 import com.educator.enrollment.entity.Enrollment;
 import com.educator.enrollment.service.EnrollmentService;
 import com.educator.users.User;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import com.educator.users.UserRepository;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -13,9 +17,14 @@ import java.util.List;
 public class LearnerEnrollmentController {
 
     private final EnrollmentService enrollmentService;
+    private final UserRepository userRepository;
 
-    public LearnerEnrollmentController(EnrollmentService enrollmentService) {
+    public LearnerEnrollmentController(
+            EnrollmentService enrollmentService,
+            UserRepository userRepository
+    ) {
         this.enrollmentService = enrollmentService;
+        this.userRepository = userRepository;
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -23,27 +32,36 @@ public class LearnerEnrollmentController {
     // ─────────────────────────────────────────────────────────────
 
     @PostMapping("/course/{courseId}")
-    public Enrollment enroll(@AuthenticationPrincipal User user,
-                             @PathVariable Long courseId) {
+    public Enrollment enroll(
+            Authentication authentication,
+            @PathVariable Long courseId
+    ) {
+        User user = resolveAuthenticatedUser(authentication);
         return enrollmentService.enroll(user, courseId);
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // Drop enrollment
-    // ─────────────────────────────────────────────────────────────
-
-    @DeleteMapping("/{enrollmentId}")
-    public void drop(@AuthenticationPrincipal User user,
-                     @PathVariable Long enrollmentId) {
-        enrollmentService.dropEnrollment(user, enrollmentId);
+    @GetMapping
+    public List<Enrollment> getMyEnrollments(Authentication authentication) {
+        User user = resolveAuthenticatedUser(authentication);
+        return enrollmentService.getMyEnrollments(user);
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // Get my enrollments
-    // ─────────────────────────────────────────────────────────────
+    @DeleteMapping("/{enrollmentId}")
+    public ResponseEntity<Void> dropEnrollment(
+            Authentication authentication,
+            @PathVariable Long enrollmentId
+    ) {
+        User user = resolveAuthenticatedUser(authentication);
+        enrollmentService.dropEnrollment(user, enrollmentId);
+        return ResponseEntity.noContent().build();
+    }
 
-    @GetMapping
-    public List<Enrollment> myEnrollments(@AuthenticationPrincipal User user) {
-        return enrollmentService.getMyEnrollments(user);
+    private User resolveAuthenticatedUser(Authentication authentication) {
+        String email = authentication.getName(); // JWT subject
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.UNAUTHORIZED,
+                        "Authenticated user not found"
+                ));
     }
 }

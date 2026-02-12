@@ -1,0 +1,53 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: educator-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: educator
+      POSTGRES_USER: educator
+      POSTGRES_PASSWORD: educator
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - educator_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U educator -d educator"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    image: maven:3.9.9-eclipse-temurin-17
+    container_name: educator-backend
+    working_dir: /app
+    volumes:
+      - ./backend:/app
+      - ~/.m2:/root/.m2
+    command: mvn spring-boot:run
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/educator
+      SPRING_DATASOURCE_USERNAME: educator
+      SPRING_DATASOURCE_PASSWORD: educator
+      SERVER_PORT: 8080
+    ports:
+      - "${BACKEND_PORT:-8080}:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  frontend:
+    image: node:20-alpine
+    container_name: educator-frontend
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+    command: sh -c "npm install && npm run dev"
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    depends_on:
+      - backend
+
+volumes:
+  educator_pgdata:

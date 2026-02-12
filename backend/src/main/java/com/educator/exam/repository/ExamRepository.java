@@ -9,19 +9,16 @@ import java.util.UUID;
 
 /**
  * Repository for Exam entity.
- *
- * Contains only persistence-level queries.
  */
 public interface ExamRepository extends JpaRepository<Exam, UUID> {
 
     /**
      * Find exam by course ID.
-     * One exam per course by contract.
      */
-    Optional<Exam> findByCourseId(UUID courseId);
+    Optional<Exam> findByCourseId(Long courseId);
 
     /**
      * Check if an exam exists for a given course and status.
      */
-    boolean existsByCourseIdAndStatus(UUID courseId, ExamStatus status);
+    boolean existsByCourseIdAndStatus(Long courseId, ExamStatus status);
 }

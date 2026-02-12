@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(.mvnw.cmd test:*)",
+      "Bash(./mvnw.cmd test:*)",
+      "Bash(java:*)",
+      "Bash(export JAVA_HOME=\"/c/Program Files/Eclipse Adoptium/jdk-17.0.18.8-hotspot\")",
+      "Bash(export PATH=\"$JAVA_HOME/bin:$PATH\")",
+      "Bash(./mvnw test:*)",
+      "Bash(powershell -Command:*)",
+      "Bash(python3:*)",
+      "Bash(node -e:*)"
+    ]
+  }
+}

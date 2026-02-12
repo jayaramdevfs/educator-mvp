@@ -27,10 +27,21 @@ public class ExamService {
      * Enforces one-exam-per-course rule.
      */
     public Exam createExam(Exam exam) {
-        Optional<Exam> existing = examRepository.findByCourseId(exam.getCourseId());
-        if (existing.isPresent()) {
-            throw new IllegalStateException("Exam already exists for this course");
+        System.out.println("DEBUG → courseId = " + exam.getCourseId());
+        if (exam.getCourseId() == null) {
+            throw new IllegalArgumentException("Course ID is required");
         }
+
+        Optional<Exam> existing =
+                examRepository.findByCourseId(exam.getCourseId());
+
+        System.out.println("DEBUG → existing present = " + existing.isPresent());
+        if (existing.isPresent()) {
+            throw new IllegalStateException(
+                    "Exam already exists for this course"
+            );
+        }
+
         exam.setStatus(ExamStatus.DRAFT);
         return examRepository.save(exam);
     }
@@ -59,6 +70,8 @@ public class ExamService {
     @Transactional(readOnly = true)
     public Exam getExamOrThrow(UUID examId) {
         return examRepository.findById(examId)
-                .orElseThrow(() -> new IllegalArgumentException("Exam not found"));
+                .orElseThrow(() ->
+                        new IllegalArgumentException("Exam not found")
+                );
     }
 }

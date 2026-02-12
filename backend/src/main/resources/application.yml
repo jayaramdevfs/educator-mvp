@@ -24,3 +24,12 @@ spring:
 jwt:
   secret: "educator-secret-key-change-later"
   expiration-ms: 3600000
+
+app:
+  admin:
+    bootstrap:
+      email: admin@educator.local
+      password: Admin@123
+  security:
+    cors:
+      allowed-origins: http://localhost:3000,http://127.0.0.1:3000

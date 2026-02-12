@@ -18,9 +18,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-/**
- * Service responsible for exam attempts and evaluation.
- */
 @Service
 @Transactional
 public class ExamAttemptService {
@@ -42,15 +39,15 @@ public class ExamAttemptService {
         this.entityManager = entityManager;
     }
 
-    /**
-     * Start a new exam attempt.
-     */
     public ExamAttempt startAttempt(UUID examId, UUID userId) {
+
         Exam exam = examRepository.findById(examId)
                 .orElseThrow(() -> new IllegalArgumentException("Exam not found"));
 
         if (exam.getMaxAttempts() != null) {
-            long usedAttempts = examAttemptRepository.countByExamIdAndUserId(examId, userId);
+            long usedAttempts =
+                    examAttemptRepository.countByExamIdAndUserId(examId, userId);
+
             if (usedAttempts >= exam.getMaxAttempts()) {
                 throw new IllegalStateException("Maximum attempts exceeded");
             }
@@ -64,13 +61,11 @@ public class ExamAttemptService {
         return examAttemptRepository.save(attempt);
     }
 
-    /**
-     * Submit an exam attempt and evaluate it.
-     */
     public ExamAttempt submitAndEvaluateAttempt(
             UUID attemptId,
             List<ExamAttemptAnswer> answers
     ) {
+
         ExamAttempt attempt = examAttemptRepository.findById(attemptId)
                 .orElseThrow(() -> new IllegalArgumentException("Attempt not found"));
 
@@ -88,6 +83,7 @@ public class ExamAttemptService {
                         ")",
                 ExamOption.class
         );
+
         query.setParameter("examId", attempt.getExamId());
 
         List<ExamOption> correctOptions = query.getResultList();
@@ -101,36 +97,38 @@ public class ExamAttemptService {
 
         for (ExamAttemptAnswer answer : answers) {
             for (ExamOption option : correctOptions) {
-                if (option.getId().equals(answer.getSelectedOptionId()) && option.isCorrect()) {
+                if (option.getId().equals(answer.getSelectedOptionId())
+                        && option.isCorrect()) {
                     correctAnswers++;
                 }
             }
         }
 
-        int scorePercentage = (int) ((correctAnswers * 100.0) / totalQuestions);
+        int scorePercentage =
+                (int) ((correctAnswers * 100.0) / totalQuestions);
+
+        Exam exam = examRepository.findById(attempt.getExamId())
+                .orElseThrow();
 
         attempt.setTotalQuestions(totalQuestions);
         attempt.setCorrectAnswers(correctAnswers);
         attempt.setScorePercentage(scorePercentage);
-        attempt.setPassed(scorePercentage >=
-                examRepository.findById(attempt.getExamId())
-                        .orElseThrow()
-                        .getPassPercentage());
-
+        attempt.setPassed(scorePercentage >= exam.getPassPercentage());
         attempt.setStatus(AttemptStatus.EVALUATED);
         attempt.setSubmittedAt(LocalDateTime.now());
         attempt.setEvaluatedAt(LocalDateTime.now());
 
         examAttemptRepository.save(attempt);
 
-        // Create course completion if passed
+        // If passed → create course completion
         if (attempt.getPassed()) {
+
             CourseCompletion completion = new CourseCompletion();
-            completion.setCourseId(
-                    examRepository.findById(attempt.getExamId())
-                            .orElseThrow()
-                            .getCourseId()
-            );
+
+            // 🔥 NOW RETURNS Long — matches CourseCompletion
+            Long courseId = exam.getCourseId();
+
+            completion.setCourseId(courseId);
             completion.setUserId(attempt.getUserId());
             completion.setExamAttemptId(attempt.getId());
 

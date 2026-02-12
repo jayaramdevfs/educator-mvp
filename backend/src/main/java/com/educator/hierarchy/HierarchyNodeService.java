@@ -1,5 +1,8 @@
 package com.educator.hierarchy;
 
+import com.educator.common.exception.BusinessValidationException;
+import com.educator.common.exception.DuplicateResourceException;
+import com.educator.common.exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,7 +33,7 @@ public class HierarchyNodeService {
             String createdBy
     ) {
         if (repository.existsBySlug(slug)) {
-            throw new IllegalArgumentException("Slug already exists");
+            throw new DuplicateResourceException("Slug already exists");
         }
 
         HierarchyNode node = new HierarchyNode();
@@ -81,11 +84,11 @@ public class HierarchyNodeService {
         HierarchyNode newParent = getNodeOrThrow(newParentId);
 
         if (node.getId().equals(newParent.getId())) {
-            throw new IllegalStateException("Node cannot be parent of itself");
+            throw new BusinessValidationException("Node cannot be parent of itself");
         }
 
         if (isDescendant(node, newParent)) {
-            throw new IllegalStateException("Cycle detected in hierarchy");
+            throw new BusinessValidationException("Cycle detected in hierarchy");
         }
 
         validateDepth(newParent);
@@ -105,7 +108,7 @@ public class HierarchyNodeService {
     }
 
     public void restore(Long nodeId) {
-        HierarchyNode node = getNodeOrThrow(nodeId);
+        HierarchyNode node = getNodeIncludingDeletedOrThrow(nodeId);
         node.setDeleted(false);
         repository.save(node);
     }
@@ -131,7 +134,16 @@ public class HierarchyNodeService {
     private HierarchyNode getNodeOrThrow(Long id) {
         return repository.findById(id)
                 .filter(n -> !n.isDeleted())
-                .orElseThrow(() -> new IllegalArgumentException("Hierarchy node not found"));
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Hierarchy node not found")
+                );
+    }
+
+    private HierarchyNode getNodeIncludingDeletedOrThrow(Long id) {
+        return repository.findById(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Hierarchy node not found")
+                );
     }
 
     private void validateDepth(HierarchyNode parent) {
@@ -141,7 +153,7 @@ public class HierarchyNodeService {
         while (current.getParent() != null) {
             depth++;
             if (depth >= MAX_DEPTH) {
-                throw new IllegalStateException("Maximum hierarchy depth exceeded");
+                throw new BusinessValidationException("Maximum hierarchy depth exceeded");
             }
             current = current.getParent();
         }

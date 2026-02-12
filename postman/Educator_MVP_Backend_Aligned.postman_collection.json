@@ -1,0 +1,1300 @@
+{
+  "info": {
+    "_postman_id": "d8f29d99-9a7f-4ab4-b9b9-9f05d662d9fb",
+    "name": "Educator MVP - Backend Aligned API Suite",
+    "description": "Backend-aligned Newman suite that validates every currently implemented REST endpoint in the Educator MVP backend.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{jwt_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "01. Auth Bootstrap",
+      "item": [
+        {
+          "name": "Register Test Student",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/auth/register",
+            "description": "Creates a unique student account for this run.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{test_student_email}}\",\n  \"password\": \"{{test_student_password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const runId = Date.now().toString();",
+                  "pm.environment.set('run_id', runId);",
+                  "pm.environment.set('test_student_email', `student_${runId}@test.com`);",
+                  "pm.environment.set('test_student_password', 'TestPass123!');",
+                  "pm.environment.set('test_student_uuid', pm.variables.replaceIn('{{$guid}}'));",
+                  "['course_id','lesson_text_id','lesson_video_id','lesson_doc_id','exam_id','attempt_id','enrollment_id','hierarchy_root_id_a','hierarchy_root_id_b','hierarchy_child_id','homepage_section_id'].forEach(k => pm.environment.unset(k));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Response time is acceptable', function () { pm.expect(pm.response.responseTime).to.be.below(5000); });",
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Registration successful message returned', function () {",
+                  "  pm.expect(pm.response.text()).to.include('User registered successfully');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login Test Student",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/auth/login",
+            "description": "Logs in the generated student and saves student JWT.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{test_student_email}}\",\n  \"password\": \"{{test_student_password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Response time is acceptable', function () { pm.expect(pm.response.responseTime).to.be.below(5000); });",
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "const jsonData = pm.response.json();",
+                  "pm.test('Student login returns token', function () {",
+                  "  pm.expect(jsonData).to.have.property('token');",
+                  "  pm.expect(jsonData.token).to.be.a('string');",
+                  "  pm.expect(jsonData.token.length).to.be.greaterThan(10);",
+                  "});",
+                  "pm.environment.set('student_token', jsonData.token);",
+                  "pm.environment.set('jwt_token', jsonData.token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login Bootstrap Admin",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/auth/login",
+            "description": "Logs in bootstrap admin and saves admin JWT.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{bootstrap_admin_email}}\",\n  \"password\": \"{{bootstrap_admin_password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Response time is acceptable', function () { pm.expect(pm.response.responseTime).to.be.below(5000); });",
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "const jsonData = pm.response.json();",
+                  "pm.test('Admin login returns token', function () {",
+                  "  pm.expect(jsonData).to.have.property('token');",
+                  "  pm.expect(jsonData.token).to.be.a('string');",
+                  "  pm.expect(jsonData.token.length).to.be.greaterThan(10);",
+                  "});",
+                  "pm.environment.set('admin_token', jsonData.token);",
+                  "pm.environment.set('jwt_token', jsonData.token);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "02. Hierarchy APIs",
+      "item": [
+        {
+          "name": "Create Hierarchy Root A",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{base_url}}/api/admin/hierarchy?slug=suite-root-a-{{run_id}}&nameEn=SuiteRootA&descriptionEn=RootA&sortOrder=0&createdBy=suite-admin"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Response time is acceptable', function () { pm.expect(pm.response.responseTime).to.be.below(5000); });",
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "const jsonData = pm.response.json();",
+                  "pm.test('Root A created', function () {",
+                  "  pm.expect(jsonData).to.have.property('id');",
+                  "  pm.expect(jsonData.slug).to.eql('suite-root-a-' + pm.environment.get('run_id'));",
+                  "});",
+                  "pm.environment.set('hierarchy_root_id_a', String(jsonData.id));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Hierarchy Root B",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{base_url}}/api/admin/hierarchy?slug=suite-root-b-{{run_id}}&nameEn=SuiteRootB&descriptionEn=RootB&sortOrder=1&createdBy=suite-admin"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Response time is acceptable', function () { pm.expect(pm.response.responseTime).to.be.below(5000); });",
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "const jsonData = pm.response.json();",
+                  "pm.test('Root B created', function () {",
+                  "  pm.expect(jsonData).to.have.property('id');",
+                  "  pm.expect(jsonData.slug).to.eql('suite-root-b-' + pm.environment.get('run_id'));",
+                  "});",
+                  "pm.environment.set('hierarchy_root_id_b', String(jsonData.id));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Hierarchy Child",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{base_url}}/api/admin/hierarchy?slug=suite-child-{{run_id}}&nameEn=SuiteChild&descriptionEn=ChildNode&parentId={{hierarchy_root_id_a}}&sortOrder=0"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Response time is acceptable', function () { pm.expect(pm.response.responseTime).to.be.below(5000); });",
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "const jsonData = pm.response.json();",
+                  "pm.test('Child created under root A', function () {",
+                  "  pm.expect(jsonData).to.have.property('id');",
+                  "  pm.expect(jsonData.parent).to.be.an('object');",
+                  "  pm.expect(String(jsonData.parent.id)).to.eql(pm.environment.get('hierarchy_root_id_a'));",
+                  "});",
+                  "pm.environment.set('hierarchy_child_id', String(jsonData.id));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Hierarchy Root A",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": "{{base_url}}/api/admin/hierarchy/{{hierarchy_root_id_a}}?nameEn=SuiteRootAUpdated&descriptionEn=UpdatedRootA&sortOrder=2&isPublished=true&isVisible=true"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Response time is acceptable', function () { pm.expect(pm.response.responseTime).to.be.below(5000); });",
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "const jsonData = pm.response.json();",
+                  "pm.test('Root A updated', function () {",
+                  "  pm.expect(jsonData.nameEn).to.eql('SuiteRootAUpdated');",
+                  "  pm.expect(jsonData.published).to.eql(true);",
+                  "  pm.expect(jsonData.visible).to.eql(true);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Move Hierarchy Child to Root B",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": "{{base_url}}/api/admin/hierarchy/{{hierarchy_child_id}}/move?newParentId={{hierarchy_root_id_b}}"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Response time is acceptable', function () { pm.expect(pm.response.responseTime).to.be.below(5000); });",
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "const jsonData = pm.response.json();",
+                  "pm.test('Child moved under root B', function () {",
+                  "  pm.expect(jsonData.parent).to.be.an('object');",
+                  "  pm.expect(String(jsonData.parent.id)).to.eql(pm.environment.get('hierarchy_root_id_b'));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Hierarchy Roots (Public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/api/hierarchy/roots",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Response time is acceptable', function () { pm.expect(pm.response.responseTime).to.be.below(5000); });",
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "const jsonData = pm.response.json();",
+                  "pm.test('Roots response is an array', function () {",
+                  "  pm.expect(jsonData).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Hierarchy Children (Public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/api/hierarchy/{{hierarchy_root_id_b}}/children",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Response time is acceptable', function () { pm.expect(pm.response.responseTime).to.be.below(5000); });",
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "const jsonData = pm.response.json();",
+                  "pm.test('Children response includes moved child', function () {",
+                  "  pm.expect(jsonData).to.be.an('array');",
+                  "  const ids = jsonData.map(x => String(x.id));",
+                  "  pm.expect(ids).to.include(pm.environment.get('hierarchy_child_id'));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Soft Delete Hierarchy Child",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{base_url}}/api/admin/hierarchy/{{hierarchy_child_id}}"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Response time is acceptable', function () { pm.expect(pm.response.responseTime).to.be.below(5000); });",
+                  "pm.test('Status code is 204', function () { pm.response.to.have.status(204); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Restore Hierarchy Child",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": "{{base_url}}/api/admin/hierarchy/{{hierarchy_child_id}}/restore"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Response time is acceptable', function () { pm.expect(pm.response.responseTime).to.be.below(5000); });",
+                  "pm.test('Status code is 204', function () { pm.response.to.have.status(204); });"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const token = pm.environment.get('admin_token');",
+              "if (!token) { throw new Error('Missing admin_token. Run Login Bootstrap Admin first.'); }",
+              "pm.environment.set('jwt_token', token);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "03. Course and Lesson APIs",
+      "item": [
+        {
+          "name": "Create Course",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{base_url}}/api/admin/courses?hierarchyNodeId={{hierarchy_root_id_a}}&titleEn=SuiteCourse{{run_id}}&descriptionEn=SuiteCourseDesc&difficulty=BEGINNER&languageCode=en&estimatedDurationMinutes=120&createdByRole=ADMIN"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Response time is acceptable', function () { pm.expect(pm.response.responseTime).to.be.below(5000); });",
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "const jsonData = pm.response.json();",
+                  "pm.test('Course created in DRAFT status', function () {",
+                  "  pm.expect(jsonData).to.have.property('id');",
+                  "  pm.expect(jsonData.status).to.eql('DRAFT');",
+                  "});",
+                  "pm.environment.set('course_id', String(jsonData.id));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Publish Course",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{base_url}}/api/admin/courses/{{course_id}}/publish"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Response time is acceptable', function () { pm.expect(pm.response.responseTime).to.be.below(5000); });",
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Lesson TEXT",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{base_url}}/api/admin/lessons/course/{{course_id}}?type=TEXT&orderIndex=0&textContent=WelcomeToTheCourse"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Response time is acceptable', function () { pm.expect(pm.response.responseTime).to.be.below(5000); });",
+                  "pm.test('Status code is 201', function () { pm.response.to.have.status(201); });",
+                  "const jsonData = pm.response.json();",
+                  "pm.test('TEXT lesson created', function () {",
+                  "  pm.expect(jsonData).to.have.property('id');",
+                  "  pm.expect(jsonData.type).to.eql('TEXT');",
+                  "});",
+                  "pm.environment.set('lesson_text_id', String(jsonData.id));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Lesson VIDEO",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{base_url}}/api/admin/lessons/course/{{course_id}}?type=VIDEO&orderIndex=1&videoUrl=https://example.com/video.mp4"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Response time is acceptable', function () { pm.expect(pm.response.responseTime).to.be.below(5000); });",
+                  "pm.test('Status code is 201', function () { pm.response.to.have.status(201); });",
+                  "const jsonData = pm.response.json();",
+                  "pm.test('VIDEO lesson created', function () {",
+                  "  pm.expect(jsonData).to.have.property('id');",
+                  "  pm.expect(jsonData.type).to.eql('VIDEO');",
+                  "});",
+                  "pm.environment.set('lesson_video_id', String(jsonData.id));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Lesson DOCUMENT",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{base_url}}/api/admin/lessons/course/{{course_id}}?type=DOCUMENT&orderIndex=2&documentUrl=https://example.com/document.pdf"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Response time is acceptable', function () { pm.expect(pm.response.responseTime).to.be.below(5000); });",
+                  "pm.test('Status code is 201', function () { pm.response.to.have.status(201); });",
+                  "const jsonData = pm.response.json();",
+                  "pm.test('DOCUMENT lesson created', function () {",
+                  "  pm.expect(jsonData).to.have.property('id');",
+                  "  pm.expect(jsonData.type).to.eql('DOCUMENT');",
+                  "});",
+                  "pm.environment.set('lesson_doc_id', String(jsonData.id));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Lessons for Course (Admin Query)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/api/admin/lesson-queries/course/{{course_id}}"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Response time is acceptable', function () { pm.expect(pm.response.responseTime).to.be.below(5000); });",
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "const jsonData = pm.response.json();",
+                  "pm.test('Admin lesson query returns array', function () {",
+                  "  pm.expect(jsonData).to.be.an('array');",
+                  "  pm.expect(jsonData.length).to.be.greaterThan(0);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Lessons for Course (Public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/api/public/lessons/course/{{course_id}}",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Response time is acceptable', function () { pm.expect(pm.response.responseTime).to.be.below(5000); });",
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "const jsonData = pm.response.json();",
+                  "pm.test('Public lessons response is array', function () {",
+                  "  pm.expect(jsonData).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Lesson Tree (Public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/api/public/lesson-tree/course/{{course_id}}",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Response time is acceptable', function () { pm.expect(pm.response.responseTime).to.be.below(5000); });",
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "const jsonData = pm.response.json();",
+                  "pm.test('Lesson tree response is array', function () {",
+                  "  pm.expect(jsonData).to.be.an('array');",
+                  "});",
+                  "pm.test('Tree nodes include children field', function () {",
+                  "  if (jsonData.length > 0) {",
+                  "    pm.expect(jsonData[0]).to.have.property('children');",
+                  "  }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const token = pm.environment.get('admin_token');",
+              "if (!token) { throw new Error('Missing admin_token. Run Login Bootstrap Admin first.'); }",
+              "pm.environment.set('jwt_token', token);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "04. Exam APIs (Admin and Instructor)",
+      "item": [
+        {
+          "name": "Create Exam",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/admin/exams",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courseId\": {{course_id}},\n  \"title\": \"SuiteExam{{run_id}}\",\n  \"description\": \"Suite exam description\",\n  \"instructions\": \"Answer all questions\",\n  \"rulesSummary\": \"No extra rules\",\n  \"passPercentage\": 50,\n  \"maxAttempts\": 3,\n  \"timeLimitMinutes\": 30,\n  \"shuffleQuestions\": false,\n  \"shuffleOptions\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Response time is acceptable', function () { pm.expect(pm.response.responseTime).to.be.below(5000); });",
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "const jsonData = pm.response.json();",
+                  "pm.test('Exam created in DRAFT status', function () {",
+                  "  pm.expect(jsonData).to.have.property('id');",
+                  "  pm.expect(jsonData.status).to.eql('DRAFT');",
+                  "});",
+                  "pm.environment.set('exam_id', String(jsonData.id));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Exam Details (Instructor Endpoint)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/api/instructor/exams/{{exam_id}}"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Response time is acceptable', function () { pm.expect(pm.response.responseTime).to.be.below(5000); });",
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "const jsonData = pm.response.json();",
+                  "pm.test('Instructor exam response has expected id', function () {",
+                  "  pm.expect(String(jsonData.id)).to.eql(pm.environment.get('exam_id'));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Publish Exam",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{base_url}}/api/admin/exams/{{exam_id}}/publish"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Response time is acceptable', function () { pm.expect(pm.response.responseTime).to.be.below(5000); });",
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "const jsonData = pm.response.json();",
+                  "pm.test('Exam published', function () {",
+                  "  pm.expect(jsonData.status).to.eql('PUBLISHED');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const token = pm.environment.get('admin_token');",
+              "if (!token) { throw new Error('Missing admin_token. Run Login Bootstrap Admin first.'); }",
+              "pm.environment.set('jwt_token', token);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "05. Student Exam APIs",
+      "item": [
+        {
+          "name": "Start Exam Attempt",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{base_url}}/api/student/exams/{{exam_id}}/start?userId={{test_student_uuid}}"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Response time is acceptable', function () { pm.expect(pm.response.responseTime).to.be.below(5000); });",
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "const jsonData = pm.response.json();",
+                  "pm.test('Attempt created in IN_PROGRESS status', function () {",
+                  "  pm.expect(jsonData).to.have.property('id');",
+                  "  pm.expect(jsonData.status).to.eql('IN_PROGRESS');",
+                  "});",
+                  "pm.environment.set('attempt_id', String(jsonData.id));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Submit Exam Attempt",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/student/exams/attempts/{{attempt_id}}/submit",
+            "body": {
+              "mode": "raw",
+              "raw": "[]",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Response time is acceptable', function () { pm.expect(pm.response.responseTime).to.be.below(5000); });",
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "const jsonData = pm.response.json();",
+                  "pm.test('Attempt is evaluated', function () {",
+                  "  pm.expect(jsonData.status).to.eql('EVALUATED');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const token = pm.environment.get('student_token');",
+              "if (!token) { throw new Error('Missing student_token. Run Login Test Student first.'); }",
+              "pm.environment.set('jwt_token', token);",
+              "if (!pm.environment.get('test_student_uuid')) {",
+              "  pm.environment.set('test_student_uuid', pm.variables.replaceIn('{{$guid}}'));",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "06. Learner Enrollment and Progress APIs",
+      "item": [
+        {
+          "name": "Enroll in Published Course",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{base_url}}/api/learner/enrollments/course/{{course_id}}"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Response time is acceptable', function () { pm.expect(pm.response.responseTime).to.be.below(5000); });",
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "const jsonData = pm.response.json();",
+                  "pm.test('Enrollment created with ACTIVE status', function () {",
+                  "  pm.expect(jsonData).to.have.property('id');",
+                  "  pm.expect(jsonData.status).to.eql('ACTIVE');",
+                  "});",
+                  "pm.environment.set('enrollment_id', String(jsonData.id));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List My Enrollments",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/api/learner/enrollments"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Response time is acceptable', function () { pm.expect(pm.response.responseTime).to.be.below(5000); });",
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "const jsonData = pm.response.json();",
+                  "pm.test('Enrollment list response is array', function () {",
+                  "  pm.expect(jsonData).to.be.an('array');",
+                  "});",
+                  "pm.test('Enrollment list includes current enrollment', function () {",
+                  "  const ids = jsonData.map(x => String(x.id));",
+                  "  pm.expect(ids).to.include(pm.environment.get('enrollment_id'));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Start Enrollment Progress",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{base_url}}/api/learner/progress/enrollment/{{enrollment_id}}/start"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Response time is acceptable', function () { pm.expect(pm.response.responseTime).to.be.below(5000); });",
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Complete Lesson",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{base_url}}/api/learner/progress/enrollment/{{enrollment_id}}/lesson/{{lesson_text_id}}/complete"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Response time is acceptable', function () { pm.expect(pm.response.responseTime).to.be.below(5000); });",
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Drop Enrollment",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{base_url}}/api/learner/enrollments/{{enrollment_id}}"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Response time is acceptable', function () { pm.expect(pm.response.responseTime).to.be.below(5000); });",
+                  "pm.test('Status code is 204', function () { pm.response.to.have.status(204); });"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const token = pm.environment.get('student_token');",
+              "if (!token) { throw new Error('Missing student_token. Run Login Test Student first.'); }",
+              "pm.environment.set('jwt_token', token);",
+              "if (!pm.environment.get('test_student_uuid')) {",
+              "  pm.environment.set('test_student_uuid', pm.variables.replaceIn('{{$guid}}'));",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "07. Homepage and Finalization APIs",
+      "item": [
+        {
+          "name": "Create Homepage Section",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/admin/homepage/sections",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"SuiteSection{{run_id}}\",\n  \"position\": \"TOP\",\n  \"orderIndex\": 0,\n  \"enabled\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Response time is acceptable', function () { pm.expect(pm.response.responseTime).to.be.below(5000); });",
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "const jsonData = pm.response.json();",
+                  "pm.test('Homepage section created', function () {",
+                  "  pm.expect(jsonData).to.have.property('id');",
+                  "});",
+                  "pm.environment.set('homepage_section_id', String(jsonData.id));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Homepage Block",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/admin/homepage/blocks",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sectionId\": \"{{homepage_section_id}}\",\n  \"blockType\": \"TEXT\",\n  \"orderIndex\": 0,\n  \"enabled\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Response time is acceptable', function () { pm.expect(pm.response.responseTime).to.be.below(5000); });",
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "const jsonData = pm.response.json();",
+                  "pm.test('Homepage block created for section', function () {",
+                  "  pm.expect(jsonData).to.have.property('id');",
+                  "  pm.expect(String(jsonData.sectionId)).to.eql(pm.environment.get('homepage_section_id'));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Homepage (Public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/api/public/homepage",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Response time is acceptable', function () { pm.expect(pm.response.responseTime).to.be.below(5000); });",
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "const jsonData = pm.response.json();",
+                  "pm.test('Homepage response is array', function () {",
+                  "  pm.expect(jsonData).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Active Courses",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/api/admin/courses/active"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Response time is acceptable', function () { pm.expect(pm.response.responseTime).to.be.below(5000); });",
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "const jsonData = pm.response.json();",
+                  "pm.test('Active courses response is array', function () {",
+                  "  pm.expect(jsonData).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Archive Exam",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{base_url}}/api/admin/exams/{{exam_id}}/archive"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Response time is acceptable', function () { pm.expect(pm.response.responseTime).to.be.below(5000); });",
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "const jsonData = pm.response.json();",
+                  "pm.test('Exam archived', function () {",
+                  "  pm.expect(jsonData.status).to.eql('ARCHIVED');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Archive Course",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{base_url}}/api/admin/courses/{{course_id}}/archive"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Response time is acceptable', function () { pm.expect(pm.response.responseTime).to.be.below(5000); });",
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete Lesson (Soft)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{base_url}}/api/admin/lessons/{{lesson_doc_id}}"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Response time is acceptable', function () { pm.expect(pm.response.responseTime).to.be.below(5000); });",
+                  "pm.test('Status code is 204', function () { pm.response.to.have.status(204); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete Course (Soft)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{base_url}}/api/admin/courses/{{course_id}}"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Response time is acceptable', function () { pm.expect(pm.response.responseTime).to.be.below(5000); });",
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const token = pm.environment.get('admin_token');",
+              "if (!token) { throw new Error('Missing admin_token. Run Login Bootstrap Admin first.'); }",
+              "pm.environment.set('jwt_token', token);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "08. Security Sanity Checks",
+      "item": [
+        {
+          "name": "Admin Endpoint Without Token",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/api/admin/courses/active",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Response time is acceptable', function () { pm.expect(pm.response.responseTime).to.be.below(5000); });",
+                  "pm.test('Status code is 401', function () { pm.response.to.have.status(401); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Admin Endpoint With Student Token",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/api/admin/courses/active"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const token = pm.environment.get('student_token');",
+                  "if (!token) { throw new Error('Missing student_token.'); }",
+                  "pm.environment.set('jwt_token', token);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Response time is acceptable', function () { pm.expect(pm.response.responseTime).to.be.below(5000); });",
+                  "pm.test('Status code is 401 or 403', function () {",
+                  "  pm.expect([401, 403]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

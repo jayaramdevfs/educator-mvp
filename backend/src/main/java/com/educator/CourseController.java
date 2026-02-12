@@ -1,4 +1,4 @@
-package com.educator.course.api;
+package com.educator;
 
 import com.educator.course.Course;
 import com.educator.course.CourseDifficulty;

@@ -1,5 +1,6 @@
 package com.educator.hierarchy;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -24,6 +25,7 @@ public class HierarchyNode {
      */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id")
+    @JsonIgnoreProperties({"children", "parent"})
     private HierarchyNode parent;
 
     /**

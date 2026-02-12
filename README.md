@@ -1,179 +1,115 @@
 # Educator Platform
 
-A full-stack Learning Management System (LMS) for online course delivery, assessment, enrollment tracking, and certification.
+Full-stack LMS platform with Spring Boot backend and Next.js frontend.
 
----
+## Current Status (2026-02-12)
 
-## Project Status
-
-| Dimension | State |
+| Area | Status |
 |---|---|
-| **Backend (Sprint 1-7)** | Complete, stable, running. 120 Java files, 23 DB tables, 30+ REST endpoints. APIs contract-frozen. CertificateRepository added in Sprint 7. |
-| **Frontend (Sprint 7)** | Scaffolded. Next.js 15, TypeScript, Tailwind CSS, shadcn/ui, TanStack Query, Zustand installed. Placeholder pages and route groups created. |
-| **Current Sprint** | Sprint 8 -- Security Hardening & Backend Fixes |
+| Sprint 7 | Completed and closed |
+| Backend API verification | Passed (`40` requests, `111` assertions, `0` failed) |
+| Frontend foundation | Completed (route groups, tokens, API client, auth store, test setup) |
+| Next execution point | Sprint 8 (`MASTER_PLAN_SOURCE OF TRUTH.md`, section 17) |
 
-> **Source of Truth:** All architecture, sprint plans, deployment strategy, and feature tracking live in
-> [`MASTER_PLAN.md`](./MASTER_PLAN.md). This README is the quick-start guide only.
+## Source of Truth and Handoff Docs
 
----
+- Master plan: `MASTER_PLAN_SOURCE OF TRUTH.md`
+- Sprint 7 closure: `SPRINT_7_FINAL_HANDOFF.md`
+- API response shapes: `docs/B0.6_API_RESPONSE_SHAPES.md`
+- Git branching strategy: `docs/D0.2_GIT_BRANCHING_STRATEGY.md`
+- Backend-aligned API suite: `postman/Educator_MVP_Backend_Aligned.postman_collection.json`
+- Backend-aligned API environment: `postman/Educator_MVP_Backend_Aligned.postman_environment.json`
+- Latest API run report: `postman/backend-aligned-run.md`
 
 ## Tech Stack
 
 | Layer | Technology |
 |---|---|
-| **Backend** | Java 17, Spring Boot 4.0.2, Spring Security + JWT, JPA/Hibernate, PostgreSQL 15, Maven, Lombok |
-| **Frontend** | Next.js 15 (App Router), TypeScript, Tailwind CSS, shadcn/ui, TanStack Query, Zustand |
-| **Infrastructure** | Docker, GitHub Actions (CI/CD planned) |
+| Backend | Java 17, Spring Boot 4.0.2, Spring Security + JWT, JPA/Hibernate, PostgreSQL 15, Maven |
+| Frontend | Next.js 16, TypeScript, Tailwind CSS v4, shadcn/ui, TanStack Query, Zustand, Axios |
+| Testing | JUnit (backend), Newman/Postman (API), Vitest + Testing Library + MSW (frontend) |
+| Local infra | Docker Compose |
 
----
-
-## Quick Start -- Backend
-
-### Prerequisites
-
-- Java 17 (JDK)
-- Docker & Docker Compose
-- Maven (or use the included wrapper `./mvnw`)
-
-### Steps
-
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd Educator_replannned
-   ```
-
-2. **Start PostgreSQL via Docker**
-   ```bash
-   docker run -d \
-     --name educator-db \
-     -e POSTGRES_DB=educator \
-     -e POSTGRES_USER=educator \
-     -e POSTGRES_PASSWORD=educator \
-     -p 5432:5432 \
-     postgres:15
-   ```
-
-3. **Build and run the backend**
-   ```bash
-   cd backend
-   ./mvnw clean compile
-   ./mvnw spring-boot:run
-   ```
-
-4. **Verify**
-   - Application starts on `http://localhost:8080`
-   - Roles seeded automatically (STUDENT, INSTRUCTOR, ADMIN)
-   - Test: `POST http://localhost:8080/api/auth/register` with `{"email":"test@test.com","password":"Test1234"}`
-
----
-
-## Quick Start -- Frontend
-
-> Frontend scaffolded in Sprint 7. The dev server runs on localhost:3000.
+## Local Setup
 
 ### Prerequisites
 
-- Node.js 20+ (LTS)
-- npm 10+
+- Java 17
+- Maven (or Maven wrapper)
+- Node.js 20+
+- Docker Desktop (with `docker compose`)
 
-### Steps
+### Option A: Run backend + frontend on host machine
 
-1. **Install dependencies**
-   ```bash
-   cd frontend
-   npm install
-   ```
-
-2. **Start the dev server**
-   ```bash
-   npm run dev
-   ```
-
-3. **Verify** -- Opens on `http://localhost:3000`
-
----
-
-## Project Structure
-
-```
-Educator_replannned/
-  MASTER_PLAN.md              # Single source of truth (architecture, sprints, deployment)
-  README.md                   # This file (quick-start guide)
-  TECHNICAL_DESIGN_DOCUMENT.md  # Historical TDD (Sprint 1-6, superseded by MASTER_PLAN)
-  HANDOVER_REVIEW.md          # Historical audit (superseded by MASTER_PLAN)
-  FULL_PRODUCT_EXECUTION_PLAN.md  # Historical forward plan (superseded by MASTER_PLAN)
-  backend/
-    pom.xml                   # Maven build
-    src/main/java/com/educator/
-      auth/                   # Authentication (login, register)
-      course/                 # Course + lesson hierarchy
-      enrollment/             # Enrollment + lesson progress
-      exam/                   # Exams, attempts, auto-grading
-      engine/                 # Stateless rule engines
-      hierarchy/              # Category taxonomy tree
-      homepage/               # Dynamic CMS homepage
-      notification/           # Notification persistence
-      automation/             # Automation rules framework
-      certificate/            # Certificate entity + status
-      completion/             # Course completion records
-      media/                  # Media reference metadata
-      importer/               # Import framework (abstractions)
-      security/               # JWT filter, security config
-      users/                  # User entity
-      roles/                  # Role entity + initializer
-    src/main/resources/
-      application.yml         # Dev config (port 8080, local PostgreSQL)
-      application-prod.yml    # Production profile (env vars)
-    db/snapshots/             # Database schema snapshots
-  frontend/                   # Next.js 15 app (scaffolded in Sprint 7)
+1. Start database:
+```powershell
+docker compose up -d postgres
 ```
 
----
+2. Start backend:
+```powershell
+cd backend
+mvn spring-boot:run
+```
 
-## API Overview
+3. Start frontend:
+```powershell
+cd frontend
+npm install
+npm run dev
+```
 
-All endpoints are documented in detail in [MASTER_PLAN.md, Section 6](./MASTER_PLAN.md#6-api-endpoint-reference).
+4. URLs:
+- Backend: `http://localhost:8080`
+- Frontend: `http://localhost:3000`
 
-| Group | Base Path | Auth | Endpoints |
-|---|---|---|---|
-| Auth | `/api/auth` | Public | 2 (register, login) |
-| Public | `/api/public`, `/api/hierarchy` | Public | 5 (courses, lessons, homepage, taxonomy) |
-| Learner | `/api/learner` | Authenticated | 5 (enrollment, progress) |
-| Admin | `/api/admin` | ADMIN role | 18 (courses, lessons, exams, taxonomy, homepage) |
-| Instructor | `/api/instructor` | Authenticated | 1 (exam view) |
-| Student Exam | `/api/student` | Authenticated | 2 (start, submit exam) |
+### Option B: Run full stack with Docker Compose
 
----
+Default ports:
+```powershell
+docker compose up -d postgres backend frontend
+```
 
-## Documentation
+If `8080` is already in use on your machine:
+```powershell
+$env:BACKEND_PORT='18080'
+docker compose up -d postgres backend frontend
+```
 
-Everything lives in [`MASTER_PLAN.md`](./MASTER_PLAN.md):
+Check status:
+```powershell
+docker compose ps
+```
 
-| Topic | Section |
-|---|---|
-| Architecture & tech stack | Part I, Sections 2-3 |
-| All entities & database schema | Part I, Section 5 |
-| Complete API reference | Part I, Section 6 |
-| Business logic engines | Part I, Section 7 |
-| Known gaps & security issues | Part II, Section 12 |
-| Frontend architecture & design system | Part III, Sections 13-14 |
-| Sprint 7-14 task breakdowns | Part III, Sections 16-23 |
-| Deployment & production checklist | Part IV, Sections 24-30 |
-| Adding new features / amendments | Part V, Sections 31-35 |
+## Verification Commands
 
----
+### Backend-aligned API suite (Newman)
 
-## Key Constraints
+From repo root:
+```powershell
+npx newman run .\postman\Educator_MVP_Backend_Aligned.postman_collection.json -e .\postman\Educator_MVP_Backend_Aligned.postman_environment.json -r cli --reporter-cli-no-banner
+```
 
-- Sprint 1-7 backend code is **frozen** -- do not modify (except Sprint 8 security fixes per MASTER_PLAN)
-- Stateless JWT auth only (no sessions, no @PreAuthorize)
-- Soft deletes everywhere (no hard deletes)
-- Deterministic logic only (no AI/ML)
-- Mixed primary keys: `Long` (Sprint 1-5 entities) vs `UUID` (Sprint 6 entities)
+From `postman/` folder:
+```powershell
+npx newman run .\Educator_MVP_Backend_Aligned.postman_collection.json -e .\Educator_MVP_Backend_Aligned.postman_environment.json -r cli --reporter-cli-no-banner
+```
 
----
+### Frontend checks
 
-## License
+```powershell
+cd frontend
+npm run lint
+npx tsc --noEmit
+npm test
+npm run build
+```
 
-*To be determined.*
+## Branching Model
+
+- `main`: production-ready code
+- `develop`: integration branch
+- `feature/*`: sprint feature work
+- `hotfix/*`: urgent production fixes
+
+See `docs/D0.2_GIT_BRANCHING_STRATEGY.md` for workflow details.

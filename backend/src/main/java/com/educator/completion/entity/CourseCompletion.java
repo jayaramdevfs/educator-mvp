@@ -1,65 +1,44 @@
 package com.educator.completion.entity;
 
 import jakarta.persistence.*;
-
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-/**
- * Represents the completion of a Course by a learner.
- *
- * This entity is created only once completion criteria
- * are satisfied and acts as the authoritative completion record.
- */
 @Entity
-@Table(
-        name = "course_completions",
-        uniqueConstraints = {
-                @UniqueConstraint(columnNames = {"course_id", "user_id"})
-        }
-)
+@Table(name = "course_completions")
 public class CourseCompletion {
 
     @Id
     @GeneratedValue
     private UUID id;
 
+    // Must match Course.id (Long)
     @Column(name = "course_id", nullable = false)
-    private UUID courseId;
+    private Long courseId;
 
     @Column(name = "user_id", nullable = false)
     private UUID userId;
 
-    /**
-     * Exam attempt that resulted in course completion.
-     */
     @Column(name = "exam_attempt_id")
     private UUID examAttemptId;
 
-    /**
-     * Timestamp when the course was marked as completed.
-     */
     @Column(name = "completed_at", nullable = false)
     private LocalDateTime completedAt;
-
-    /* -------------------- Lifecycle Hooks -------------------- */
 
     @PrePersist
     protected void onCreate() {
         this.completedAt = LocalDateTime.now();
     }
 
-    /* -------------------- Getters & Setters -------------------- */
-
     public UUID getId() {
         return id;
     }
 
-    public UUID getCourseId() {
+    public Long getCourseId() {
         return courseId;
     }
 
-    public void setCourseId(UUID courseId) {
+    public void setCourseId(Long courseId) {
         this.courseId = courseId;
     }
 

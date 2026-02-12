@@ -1,0 +1,129 @@
+{
+  "_": {
+    "postman_variable_scope": "environment",
+    "postman_exported_at": "2026-02-11T00:00:00.000Z",
+    "postman_exported_using": "Postman/11.0"
+  },
+  "id": "educator-mvp-local-env",
+  "name": "Educator MVP - Local",
+  "values": [
+    {
+      "type": "any",
+      "value": "http://localhost:8080",
+      "key": "base_url"
+    },
+    {
+      "type": "any",
+      "value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkBlZHVjYXRvci5jb20iLCJyb2xlcyI6WyJTVFVERU5UIl0sImlhdCI6MTc3MDg0NzU1NiwiZXhwIjoxNzcwODUxMTU2fQ.-uo9ONWPzu9UHOSuaSqK_M_-6vt0P8cTsmkovR1kn7c",
+      "key": "jwt_token"
+    },
+    {
+      "type": "any",
+      "value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkBlZHVjYXRvci5jb20iLCJyb2xlcyI6WyJTVFVERU5UIl0sImlhdCI6MTc3MDg0NzU1NiwiZXhwIjoxNzcwODUxMTU2fQ.-uo9ONWPzu9UHOSuaSqK_M_-6vt0P8cTsmkovR1kn7c",
+      "key": "admin_token"
+    },
+    {
+      "type": "any",
+      "value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzdHVkZW50QHRlc3QuY29tIiwicm9sZXMiOlsiU1RVREVOVCJdLCJpYXQiOjE3NzA4NDc1NTYsImV4cCI6MTc3MDg1MTE1Nn0.reqxZuIIMeW1VMny5KAUbQKdsHLWhK_Ad1fiqZtmj5Y",
+      "key": "student_token"
+    },
+    {
+      "type": "any",
+      "value": "student@test.com",
+      "key": "register_email"
+    },
+    {
+      "type": "any",
+      "value": "student123",
+      "key": "register_password"
+    },
+    {
+      "type": "any",
+      "value": "1",
+      "key": "course_id"
+    },
+    {
+      "type": "any",
+      "value": "1",
+      "key": "lesson_id"
+    },
+    {
+      "type": "any",
+      "value": "1",
+      "key": "enrollment_id"
+    },
+    {
+      "type": "any",
+      "value": "1",
+      "key": "hierarchy_node_id"
+    },
+    {
+      "type": "any",
+      "value": "1",
+      "key": "hierarchy_parent_id"
+    },
+    {
+      "type": "any",
+      "value": "",
+      "key": "hierarchy_child_id"
+    },
+    {
+      "type": "any",
+      "value": "",
+      "key": "exam_id"
+    },
+    {
+      "type": "any",
+      "value": "",
+      "key": "attempt_id"
+    },
+    {
+      "type": "any",
+      "value": "",
+      "key": "user_id"
+    },
+    {
+      "type": "any",
+      "value": "",
+      "key": "homepage_section_id"
+    },
+    {
+      "type": "any",
+      "value": "",
+      "key": "question_id_1"
+    },
+    {
+      "type": "any",
+      "value": "",
+      "key": "option_id_1"
+    },
+    {
+      "type": "any",
+      "value": "",
+      "key": "question_id_2"
+    },
+    {
+      "type": "any",
+      "value": "",
+      "key": "option_id_2"
+    },
+    {
+      "type": "any",
+      "value": "",
+      "key": "hierarchy_root_id"
+    },
+    {
+      "type": "any",
+      "value": "",
+      "key": "test_student_email"
+    },
+    {
+      "type": "any",
+      "value": "",
+      "key": "test_student_password"
+    }
+  ],
+  "_postman_variable_scope": "environment",
+  "_postman_exported_at": "2026-02-11T22:05:57.079Z",
+  "_postman_exported_using": "Newman/6.2.2"
+}
