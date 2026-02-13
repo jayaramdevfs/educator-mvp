@@ -22,6 +22,10 @@ jobs:
           java-version: "17"
           cache: maven
 
+      - name: Ensure Maven wrapper is executable
+        working-directory: backend
+        run: chmod +x ./mvnw
+
       - name: Run backend tests
         working-directory: backend
         run: ./mvnw -B test
@@ -56,4 +60,3 @@ jobs:
       - name: Build
         working-directory: frontend
         run: npm run build
-
