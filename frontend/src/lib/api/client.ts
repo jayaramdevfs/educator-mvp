@@ -1,4 +1,10 @@
-import axios, { AxiosHeaders, type AxiosInstance, type AxiosRequestConfig } from "axios";
+import axios, {
+  AxiosHeaders,
+  type AxiosError,
+  type AxiosInstance,
+  type AxiosRequestConfig,
+  type InternalAxiosRequestConfig,
+} from "axios";
 import { normalizeApiError } from "@/lib/api/errors";
 import { getAccessToken } from "@/lib/api/token-storage";
 
@@ -39,6 +45,10 @@ let failedQueue: Array<{
   reject: (reason?: unknown) => void;
 }> = [];
 
+type RetryableRequestConfig = InternalAxiosRequestConfig & {
+  _retry?: boolean;
+};
+
 const processQueue = (error: unknown = null) => {
   failedQueue.forEach((prom) => {
     if (error) {
@@ -54,8 +64,9 @@ const processQueue = (error: unknown = null) => {
 apiClient.interceptors.response.use(
   (response) => response,
   async (error: unknown) => {
-    const originalRequest = (error as { config?: unknown })?.config;
-    const status = (error as { response?: { status?: number } })?.response?.status;
+    const axiosError = error as AxiosError;
+    const originalRequest = axiosError.config as RetryableRequestConfig | undefined;
+    const status = axiosError.response?.status;
 
     // If 401 and not already retrying, attempt refresh
     if (status === 401 && originalRequest && !originalRequest._retry) {
@@ -161,4 +172,3 @@ export async function apiDelete<TResponse = void>(
   const response = await apiClient.delete<TResponse>(url, config);
   return response.data;
 }
-

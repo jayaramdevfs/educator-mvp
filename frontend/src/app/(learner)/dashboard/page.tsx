@@ -8,15 +8,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 export default function LearnerDashboardPage() {
   return (
     <AuthenticatedGuard>
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900 p-6">
-        <div className="mx-auto max-w-7xl">
+      <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-950 via-purple-950 to-slate-900 p-6">
+        <div className="pointer-events-none absolute left-[8%] top-16 h-80 w-80 rounded-full bg-purple-500/20 blur-3xl" />
+        <div className="pointer-events-none absolute right-[10%] top-8 h-72 w-72 rounded-full bg-pink-500/15 blur-3xl" />
+
+        <div className="relative mx-auto max-w-7xl">
           {/* Header */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="mb-8"
           >
-            <h1 className="mb-2 bg-gradient-to-r from-blue-200 to-cyan-200 bg-clip-text text-4xl font-bold text-transparent">
+            <h1 className="mb-2 bg-gradient-to-r from-purple-200 via-pink-100 to-purple-200 bg-clip-text text-4xl font-bold text-transparent">
               Your Dashboard
             </h1>
             <p className="text-slate-400">
@@ -27,19 +30,19 @@ export default function LearnerDashboardPage() {
           {/* Stats Grid */}
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
             <StatsCard
-              icon={<BookOpen className="h-6 w-6 text-cyan-400" />}
+              icon={<BookOpen className="h-6 w-6 text-purple-300" />}
               label="Enrolled Courses"
               value="5"
               delay={0}
             />
             <StatsCard
-              icon={<Clock className="h-6 w-6 text-blue-400" />}
+              icon={<Clock className="h-6 w-6 text-purple-400" />}
               label="Hours Learned"
               value="24"
               delay={0.1}
             />
             <StatsCard
-              icon={<Award className="h-6 w-6 text-purple-400" />}
+              icon={<Award className="h-6 w-6 text-pink-300" />}
               label="Certificates"
               value="2"
               delay={0.2}
@@ -59,7 +62,7 @@ export default function LearnerDashboardPage() {
             transition={{ delay: 0.4 }}
             className="mt-8"
           >
-            <Card className="border-slate-800 bg-slate-900/50 backdrop-blur-xl">
+            <Card className="border-slate-800 bg-slate-900/50 shadow-2xl shadow-purple-500/10 backdrop-blur-xl">
               <CardHeader>
                 <CardTitle className="text-slate-100">Continue Learning</CardTitle>
                 <CardDescription className="text-slate-400">
@@ -96,10 +99,12 @@ function StatsCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay }}
     >
-      <Card className="border-slate-800 bg-slate-900/50 backdrop-blur-xl">
+      <Card className="border-slate-800 bg-slate-900/50 shadow-xl shadow-purple-500/10 backdrop-blur-xl">
         <CardContent className="p-6">
           <div className="flex items-center gap-4">
-            <div className="rounded-lg bg-slate-800/50 p-3">{icon}</div>
+            <div className="rounded-lg border border-slate-700 bg-slate-800/50 p-3">
+              {icon}
+            </div>
             <div>
               <p className="text-sm text-slate-400">{label}</p>
               <p className="text-2xl font-bold text-slate-100">{value}</p>

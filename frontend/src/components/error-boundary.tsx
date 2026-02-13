@@ -61,7 +61,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
       return (
         <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-br from-slate-950 via-purple-950 to-slate-900">
-          {/* Animated orb */}
+          {/* Animated orbs */}
           <motion.div
             className="pointer-events-none absolute h-96 w-96 rounded-full bg-purple-500/20 blur-3xl"
             animate={{
@@ -74,21 +74,33 @@ export class ErrorBoundary extends Component<Props, State> {
               ease: "easeInOut",
             }}
           />
+          <motion.div
+            className="pointer-events-none absolute -right-16 -top-16 h-80 w-80 rounded-full bg-pink-500/15 blur-3xl"
+            animate={{
+              scale: [1, 1.15, 1],
+              opacity: [0.2, 0.4, 0.2],
+            }}
+            transition={{
+              duration: 3.5,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+          />
 
           {/* Error content */}
           <motion.div
-            className="relative z-10 w-full max-w-md px-6 text-center"
+            className="relative z-10 w-full max-w-lg rounded-2xl border border-slate-800 bg-slate-900/60 p-8 text-center shadow-2xl shadow-purple-500/10 backdrop-blur-xl"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
             <motion.div
-              className="mb-6 inline-flex items-center justify-center rounded-full bg-red-500/10 p-4 backdrop-blur-sm"
+              className="mb-6 inline-flex items-center justify-center rounded-full border border-purple-500/30 bg-purple-500/10 p-4 backdrop-blur-sm"
               animate={{
                 boxShadow: [
-                  "0 0 20px rgba(239,68,68,0.2)",
-                  "0 0 40px rgba(239,68,68,0.4)",
-                  "0 0 20px rgba(239,68,68,0.2)",
+                  "0 0 20px rgba(168,85,247,0.2)",
+                  "0 0 40px rgba(168,85,247,0.4)",
+                  "0 0 20px rgba(168,85,247,0.2)",
                 ],
               }}
               transition={{
@@ -97,10 +109,10 @@ export class ErrorBoundary extends Component<Props, State> {
                 ease: "easeInOut",
               }}
             >
-              <AlertTriangle className="h-12 w-12 text-red-400" />
+              <AlertTriangle className="h-12 w-12 text-purple-400" />
             </motion.div>
 
-            <h1 className="mb-3 bg-gradient-to-r from-red-200 via-red-100 to-red-200 bg-clip-text text-3xl font-bold text-transparent">
+            <h1 className="mb-3 bg-gradient-to-r from-purple-200 via-pink-100 to-purple-200 bg-clip-text text-3xl font-bold text-transparent">
               Something Went Wrong
             </h1>
 
@@ -139,7 +151,7 @@ export class ErrorBoundary extends Component<Props, State> {
               <Button
                 onClick={this.handleGoHome}
                 variant="outline"
-                className="border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-slate-100"
+                className="border-slate-700 bg-slate-800/40 text-slate-300 hover:border-purple-500/30 hover:bg-slate-800 hover:text-purple-200"
               >
                 <Home className="mr-2 h-4 w-4" />
                 Go Home

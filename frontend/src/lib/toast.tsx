@@ -73,7 +73,10 @@ export function toastPromise<T>(
   },
   options?: ToastOptions,
 ) {
-  return sonnerToast.promise(promise, messages, {
+  return sonnerToast.promise(promise, {
+    loading: messages.loading,
+    success: messages.success,
+    error: messages.error,
     duration: defaultDuration,
     ...options,
   });
