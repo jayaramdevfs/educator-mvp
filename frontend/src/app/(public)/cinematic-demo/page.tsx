@@ -1,5 +1,5 @@
-import { CinematicLoginHome } from "@/components/feature/cinematic-home";
+import LoginNewPage from "../login-new/page";
 
 export default function CinematicDemoPage() {
-  return <CinematicLoginHome />;
+  return <LoginNewPage />;
 }
