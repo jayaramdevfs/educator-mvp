@@ -45,6 +45,9 @@ public class ExamAttempt {
     @Column(name = "passed")
     private Boolean passed;
 
+    @Column(name = "question_order", length = 4000)
+    private String questionOrder;
+
     @Column(name = "started_at", nullable = false)
     private LocalDateTime startedAt;
 
@@ -121,6 +124,14 @@ public class ExamAttempt {
 
     public void setPassed(Boolean passed) {
         this.passed = passed;
+    }
+
+    public String getQuestionOrder() {
+        return questionOrder;
+    }
+
+    public void setQuestionOrder(String questionOrder) {
+        this.questionOrder = questionOrder;
     }
 
     public LocalDateTime getStartedAt() {

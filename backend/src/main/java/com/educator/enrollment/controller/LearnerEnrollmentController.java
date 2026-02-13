@@ -1,9 +1,13 @@
 package com.educator.enrollment.controller;
 
+import com.educator.common.dto.PaginatedResponse;
+import com.educator.common.pagination.PageableFactory;
 import com.educator.enrollment.entity.Enrollment;
 import com.educator.enrollment.service.EnrollmentService;
 import com.educator.users.User;
 import com.educator.users.UserRepository;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -41,9 +45,14 @@ public class LearnerEnrollmentController {
     }
 
     @GetMapping
-    public List<Enrollment> getMyEnrollments(Authentication authentication) {
+    public PaginatedResponse<Enrollment> getMyEnrollments(
+            Authentication authentication,
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer size
+    ) {
         User user = resolveAuthenticatedUser(authentication);
-        return enrollmentService.getMyEnrollments(user);
+        Pageable pageable = PageableFactory.of(page, size, Sort.by(Sort.Direction.DESC, "enrolledAt"));
+        return new PaginatedResponse<>(enrollmentService.getMyEnrollments(user, pageable));
     }
 
     @DeleteMapping("/{enrollmentId}")

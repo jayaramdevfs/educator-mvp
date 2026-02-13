@@ -1056,73 +1056,75 @@ Navigation Bar, Sidebar, Auth Guard, JWT Token Manager, API Client (Axios), Data
 
 ### Backend Tasks
 
-| # | Task | Details |
-|---|---|---|
-| B2.1 | Add pagination to all list endpoints | Pageable parameter, Page<T>, default 20, max 100 |
-| B2.2 | Add User profile endpoint | GET/PUT /api/learner/profile |
-| B2.3 | Add password change endpoint | PUT /api/learner/profile/password |
-| B2.4 | Add password reset flow | POST /api/auth/reset-request, POST /api/auth/reset-confirm |
-| B2.5 | Wire exam timer enforcement | Check startedAt + timeLimitMinutes on submit; scheduled auto-expire |
-| B2.6 | Wire question shuffle | Randomize order in ExamAttemptService.start() |
-| B2.7 | Add answer explanations API | GET /api/student/exams/attempts/{attemptId}/review (EVALUATED only) |
-| B2.8 | Wire enrollment auto-completion | After marking lesson complete, check all done + exam passed |
-| B2.9 | Add exam attempt history API | GET /api/student/exams/{examId}/attempts |
-| B2.10 | Add notification list/read API | GET /api/learner/notifications, PUT .../notifications/{id}/read |
-| B2.11 | Add unread notification count | GET /api/learner/notifications/unread-count |
-| B2.12 | Add certificate service | Create, issue, revoke certificates |
-| B2.13 | Add certificate API | GET /api/learner/certificates, GET /api/admin/certificates/{id} |
-| B2.14 | Add course search & filter | GET /api/public/courses/search?q=&difficulty=&status= |
-| B2.15 | Add admin user management API | GET /api/admin/users, PUT /api/admin/users/{id}/roles |
-| B2.16 | Add admin dashboard stats API | GET /api/admin/stats |
-| B2.17 | Set up Flyway | spring-boot-starter-flyway, V1__baseline.sql, remove ddl-auto: update |
-| B2.18 | Add Spring Actuator | /actuator/health, readiness, liveness |
-| B2.19 | Add refresh token endpoint | POST /api/auth/refresh |
+| # | Task | Details | Status |
+|---|---|---|---|
+| B2.1 | Add pagination to all list endpoints | Pageable parameter, Page<T>, default 20, max 100 | COMPLETED |
+| B2.2 | Add User profile endpoint | GET/PUT /api/learner/profile | COMPLETED |
+| B2.3 | Add password change endpoint | PUT /api/learner/profile/password | COMPLETED |
+| B2.4 | Add password reset flow | POST /api/auth/reset-request, POST /api/auth/reset-confirm | COMPLETED |
+| B2.5 | Wire exam timer enforcement | Check startedAt + timeLimitMinutes on submit; scheduled auto-expire | COMPLETED |
+| B2.6 | Wire question shuffle | Randomize order in ExamAttemptService.start() | COMPLETED |
+| B2.7 | Add answer explanations API | GET /api/student/exams/attempts/{attemptId}/review (EVALUATED only) | COMPLETED |
+| B2.8 | Wire enrollment auto-completion | After marking lesson complete, check all done + exam passed | COMPLETED |
+| B2.9 | Add exam attempt history API | GET /api/student/exams/{examId}/attempts | COMPLETED |
+| B2.10 | Add notification list/read API | GET /api/learner/notifications, PUT .../notifications/{id}/read | COMPLETED |
+| B2.11 | Add unread notification count | GET /api/learner/notifications/unread-count | COMPLETED |
+| B2.12 | Add certificate service | Create, issue, revoke certificates | COMPLETED |
+| B2.13 | Add certificate API | GET /api/learner/certificates, GET /api/admin/certificates/{id} | COMPLETED |
+| B2.14 | Add course search & filter | GET /api/public/courses/search?q=&difficulty=&status= | COMPLETED |
+| B2.15 | Add admin user management API | GET /api/admin/users, PUT /api/admin/users/{id}/roles | COMPLETED |
+| B2.16 | Add admin dashboard stats API | GET /api/admin/stats | COMPLETED |
+| B2.17 | Set up Flyway | spring-boot-starter-flyway, V1__baseline.sql, remove ddl-auto: update | COMPLETED |
+| B2.18 | Add Spring Actuator | /actuator/health, readiness, liveness | COMPLETED |
+| B2.19 | Add refresh token endpoint | POST /api/auth/refresh | COMPLETED |
 
 ### Frontend Tasks
 
-| # | Task | Details |
-|---|---|---|
-| F2.1 | Build Homepage (dynamic CMS) | Fetch /api/public/homepage, render sections/blocks |
-| F2.2 | Build Course Catalog page | Hierarchy tree, course cards, search, filters |
-| F2.3 | Build Course Detail page | Course info, lesson tree, difficulty badge, enroll button |
-| F2.4 | Build 404 and error pages | Branded illustration, "Go Home" button |
-| F2.5 | Build footer | Copyright, links, responsive |
+| # | Task | Details | Status |
+|---|---|---|---|
+| F2.1 | Build Homepage (dynamic CMS) | Fetch /api/public/homepage, render sections/blocks | COMPLETED |
+| F2.2 | Build Course Catalog page | Hierarchy tree, course cards, search, filters | COMPLETED |
+| F2.3 | Build Course Detail page | Course info, lesson tree, difficulty badge, enroll button | COMPLETED |
+| F2.4 | Build 404 and error pages | Branded illustration, "Go Home" button | COMPLETED |
+| F2.5 | Build footer | Copyright, links, responsive | COMPLETED |
 
 ### Testing Tasks
 
-| # | Task | Details |
-|---|---|---|
-| T2.1 | Unit tests for all new services | Certificate, pagination, profile, password |
-| T2.2 | Unit tests for exam timer + shuffle | Timer enforcement, shuffle randomization |
-| T2.3 | Integration tests for all new endpoints | Every new API from B2.1-B2.19 |
-| T2.4 | Engine tests (100% coverage) | All 10 engine classes |
-| T2.5 | Repository tests | All custom query methods |
-| T2.6 | Frontend tests for public pages | Homepage, catalog, course detail |
+| # | Task | Details | Status |
+|---|---|---|---|
+| T2.1 | Unit tests for all new services | Certificate, pagination, profile, password | COMPLETED |
+| T2.2 | Unit tests for exam timer + shuffle | Timer enforcement, shuffle randomization | COMPLETED |
+| T2.3 | Integration tests for all new endpoints | Every new API from B2.1-B2.19 | COMPLETED |
+| T2.4 | Engine tests (100% coverage) | All 10 engine classes | COMPLETED |
+| T2.5 | Repository tests | All custom query methods | COMPLETED |
+| T2.6 | Frontend tests for public pages | Homepage, catalog, course detail | COMPLETED |
 
 ### Deployment Tasks
 
-| # | Task | Details |
-|---|---|---|
-| D2.1 | Create initial CI pipeline | GitHub Actions: mvn clean test, npm run lint && npm run test |
+| # | Task | Details | Status |
+|---|---|---|---|
+| D2.1 | Create initial CI pipeline | GitHub Actions: mvn clean test, npm run lint && npm run test | COMPLETED |
 
 ### Exit Criteria
 
-- [ ] All list endpoints paginated
-- [ ] User profile and password management work
-- [ ] Exam timer enforcement works
-- [ ] Question shuffle works
-- [ ] Answer explanations visible after exam
-- [ ] Enrollment auto-completes
-- [ ] Notification APIs work
-- [ ] Certificate CRUD works
-- [ ] Course search returns filtered paginated results
-- [ ] Admin user management and stats APIs work
-- [ ] Flyway manages schema migrations
-- [ ] Actuator health endpoint responds
-- [ ] Homepage renders dynamic CMS content
-- [ ] Course catalog with search and filters
-- [ ] CI pipeline runs tests on push
-- [ ] 60+ backend tests, 15+ frontend tests
+- [x] All list endpoints paginated
+- [x] User profile and password management work
+- [x] Exam timer enforcement works
+- [x] Question shuffle works
+- [x] Answer explanations visible after exam
+- [x] Enrollment auto-completes
+- [x] Notification APIs work
+- [x] Certificate CRUD works
+- [x] Course search returns filtered paginated results
+- [x] Admin user management and stats APIs work
+- [x] Flyway manages schema migrations
+- [x] Actuator health endpoint responds
+- [x] Homepage renders dynamic CMS content
+- [x] Course catalog with search and filters
+- [x] CI pipeline runs tests on push
+- [x] 160+ backend tests, 30+ frontend tests
+
+**Sprint 9 Status:** COMPLETED (All backend, frontend, testing, and build validation done)
 
 ---
 

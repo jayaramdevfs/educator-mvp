@@ -142,6 +142,13 @@ class SecurityIntegrationTest {
                 .andExpect(header().string("Access-Control-Allow-Origin", "http://localhost:3000"));
     }
 
+    @Test
+    void actuatorHealthEndpointIsPubliclyAccessible() throws Exception {
+        mockMvc.perform(get("/actuator/health"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").isNotEmpty());
+    }
+
     private String loginAndExtractToken(String email, String password, String ip) throws Exception {
         MvcResult loginResult = mockMvc.perform(
                         post("/api/auth/login")

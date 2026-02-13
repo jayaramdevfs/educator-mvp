@@ -93,6 +93,12 @@ public class SecurityConfig {
                                 "/api/public/**"
                         ).permitAll()
 
+                        // Health checks for orchestration and uptime probes.
+                        .requestMatchers(
+                                "/actuator/health",
+                                "/actuator/health/**"
+                        ).permitAll()
+
                         // Public hierarchy read-only endpoints.
                         .requestMatchers(
                                 HttpMethod.GET,

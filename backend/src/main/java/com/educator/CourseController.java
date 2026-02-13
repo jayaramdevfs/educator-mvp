@@ -3,8 +3,12 @@ package com.educator;
 import com.educator.course.Course;
 import com.educator.course.CourseDifficulty;
 import com.educator.course.service.CourseService;
+import com.educator.common.dto.PaginatedResponse;
+import com.educator.common.pagination.PageableFactory;
 import com.educator.hierarchy.HierarchyNode;
 import com.educator.hierarchy.HierarchyNodeRepository;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -66,7 +70,11 @@ public class CourseController {
     }
 
     @GetMapping("/active")
-    public List<Course> getAllActiveCourses() {
-        return courseService.getAllActiveCourses();
+    public PaginatedResponse<Course> getAllActiveCourses(
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer size
+    ) {
+        Pageable pageable = PageableFactory.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        return new PaginatedResponse<>(courseService.getAllActiveCourses(pageable));
     }
 }

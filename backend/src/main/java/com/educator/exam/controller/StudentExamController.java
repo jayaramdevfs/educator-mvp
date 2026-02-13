@@ -1,20 +1,20 @@
 package com.educator.exam.controller;
 
+import com.educator.common.dto.PaginatedResponse;
+import com.educator.common.pagination.PageableFactory;
+import com.educator.common.security.UserIdentityUtil;
+import com.educator.exam.dto.ExamAttemptReviewResponse;
 import com.educator.exam.entity.ExamAttempt;
 import com.educator.exam.entity.ExamAttemptAnswer;
 import com.educator.exam.service.ExamAttemptService;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
-
-import java.nio.charset.StandardCharsets;
-import java.util.Locale;
 import java.util.List;
 import java.util.UUID;
-
-import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
 /**
  * Student-facing controller for Exam attempts.
@@ -37,9 +37,9 @@ public class StudentExamController {
     @PostMapping("/{examId}/start")
     public ResponseEntity<ExamAttempt> startExam(
             @PathVariable UUID examId,
-            @AuthenticationPrincipal String email
+            Authentication authentication
     ) {
-        UUID authenticatedUserId = resolveAuthenticatedUserId(email);
+        UUID authenticatedUserId = UserIdentityUtil.toStableUuid(resolveEmail(authentication));
 
         return ResponseEntity.ok(
                 examAttemptService.startAttempt(examId, authenticatedUserId)
@@ -52,21 +52,46 @@ public class StudentExamController {
     @PostMapping("/attempts/{attemptId}/submit")
     public ResponseEntity<ExamAttempt> submitExam(
             @PathVariable UUID attemptId,
+            Authentication authentication,
             @Valid @RequestBody List<@Valid ExamAttemptAnswer> answers
     ) {
+        UUID authenticatedUserId = UserIdentityUtil.toStableUuid(resolveEmail(authentication));
         return ResponseEntity.ok(
-                examAttemptService.submitAndEvaluateAttempt(attemptId, answers)
+                examAttemptService.submitAndEvaluateAttempt(attemptId, authenticatedUserId, answers)
         );
     }
 
-    private UUID resolveAuthenticatedUserId(String email) {
-        if (email == null || email.isBlank()) {
-            throw new ResponseStatusException(UNAUTHORIZED, "Authenticated user not found");
-        }
-
-        // Derive a stable user UUID from the authenticated email instead of accepting userId from query params.
-        return UUID.nameUUIDFromBytes(
-                email.toLowerCase(Locale.ROOT).getBytes(StandardCharsets.UTF_8)
+    @GetMapping("/{examId}/attempts")
+    public ResponseEntity<PaginatedResponse<ExamAttempt>> getAttemptHistory(
+            @PathVariable UUID examId,
+            Authentication authentication,
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer size
+    ) {
+        UUID authenticatedUserId = UserIdentityUtil.toStableUuid(resolveEmail(authentication));
+        Pageable pageable = PageableFactory.of(page, size, Sort.by(Sort.Direction.DESC, "startedAt"));
+        return ResponseEntity.ok(
+                new PaginatedResponse<>(
+                        examAttemptService.getAttemptHistory(examId, authenticatedUserId, pageable)
+                )
         );
+    }
+
+    @GetMapping("/attempts/{attemptId}/review")
+    public ResponseEntity<ExamAttemptReviewResponse> getAttemptReview(
+            @PathVariable UUID attemptId,
+            Authentication authentication
+    ) {
+        UUID authenticatedUserId = UserIdentityUtil.toStableUuid(resolveEmail(authentication));
+        return ResponseEntity.ok(
+                examAttemptService.getAttemptReview(attemptId, authenticatedUserId)
+        );
+    }
+
+    private String resolveEmail(Authentication authentication) {
+        if (authentication == null || authentication.getName() == null || authentication.getName().isBlank()) {
+            throw new IllegalArgumentException("Authenticated user email is required");
+        }
+        return authentication.getName();
     }
 }

@@ -5,6 +5,8 @@ import com.educator.course.lesson.Lesson;
 import com.educator.course.lesson.service.LessonService;
 import com.educator.course.CourseRepository;
 import com.educator.hierarchy.HierarchyNode;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -98,6 +100,33 @@ public class CourseService {
     @Transactional(readOnly = true)
     public List<Course> getAllActiveCourses() {
         return courseRepository.findByIsDeletedFalseOrderByCreatedAtDesc();
+    }
+
+    @Transactional(readOnly = true)
+    public Page<Course> getAllActiveCourses(Pageable pageable) {
+        return courseRepository.findByIsDeletedFalse(pageable);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<Course> searchPublicCourses(
+            String q,
+            CourseDifficulty difficulty,
+            CourseStatus status,
+            Pageable pageable
+    ) {
+        return courseRepository.searchPublicCourses(q, difficulty, status, pageable);
+    }
+
+    @Transactional(readOnly = true)
+    public Course getPublicCourseById(Long courseId) {
+        Course course = courseRepository.findByIdAndIsDeletedFalse(courseId)
+                .orElseThrow(() -> new IllegalArgumentException("Course not found"));
+
+        if (course.isArchived()) {
+            throw new IllegalArgumentException("Course is archived");
+        }
+
+        return course;
     }
 
     private Course getCourseOrThrow(Long id) {

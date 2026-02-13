@@ -26,7 +26,7 @@ public class Certificate {
     private UUID id;
 
     @Column(name = "course_id", nullable = false)
-    private UUID courseId;
+    private Long courseId;
 
     @Column(name = "user_id", nullable = false)
     private UUID userId;
@@ -66,11 +66,11 @@ public class Certificate {
         return id;
     }
 
-    public UUID getCourseId() {
+    public Long getCourseId() {
         return courseId;
     }
 
-    public void setCourseId(UUID courseId) {
+    public void setCourseId(Long courseId) {
         this.courseId = courseId;
     }
 

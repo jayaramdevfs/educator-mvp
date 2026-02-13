@@ -21,4 +21,6 @@ public interface ExamRepository extends JpaRepository<Exam, UUID> {
      * Check if an exam exists for a given course and status.
      */
     boolean existsByCourseIdAndStatus(Long courseId, ExamStatus status);
+
+    long countByStatus(ExamStatus status);
 }

@@ -2,6 +2,8 @@ package com.educator.hierarchy;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
@@ -13,10 +15,14 @@ public interface HierarchyNodeRepository extends JpaRepository<HierarchyNode, Lo
      */
     List<HierarchyNode> findByParentIsNullAndIsDeletedFalseOrderBySortOrderAsc();
 
+    Page<HierarchyNode> findByParentIsNullAndIsDeletedFalse(Pageable pageable);
+
     /**
      * Fetch children of a given parent, ordered
      */
     List<HierarchyNode> findByParentIdAndIsDeletedFalseOrderBySortOrderAsc(Long parentId);
+
+    Page<HierarchyNode> findByParentIdAndIsDeletedFalse(Long parentId, Pageable pageable);
 
     /**
      * Find node by slug (used for routing / uniqueness)

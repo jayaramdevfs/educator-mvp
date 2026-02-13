@@ -4,6 +4,8 @@ import com.educator.course.Course;
 import com.educator.course.lesson.Lesson;
 import com.educator.course.lesson.LessonRepository;
 import com.educator.course.lesson.LessonType;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -136,6 +138,11 @@ public class LessonService {
     public List<Lesson> getLessonsForCourse(Course course) {
         return lessonRepository
                 .findByCourseAndParentLessonIsNullAndIsDeletedFalseOrderByOrderIndexAsc(course);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<Lesson> getLessonsForCourse(Course course, Pageable pageable) {
+        return lessonRepository.findByCourseAndParentLessonIsNullAndIsDeletedFalse(course, pageable);
     }
 
     /* -------------------------------------------------

@@ -2,6 +2,10 @@ package com.educator.auth;
 
 import com.educator.auth.dto.JwtResponse;
 import com.educator.auth.dto.LoginRequest;
+import com.educator.auth.dto.PasswordResetConfirmRequest;
+import com.educator.auth.dto.PasswordResetRequest;
+import com.educator.auth.dto.PasswordResetRequestResponse;
+import com.educator.auth.dto.RefreshTokenRequest;
 import com.educator.auth.dto.RegisterRequest;
 import com.educator.security.JwtUtil;
 import com.educator.users.User;
@@ -15,10 +19,16 @@ public class AuthController {
 
     private final AuthService authService;
     private final JwtUtil jwtUtil;
+    private final PasswordResetService passwordResetService;
 
-    public AuthController(AuthService authService, JwtUtil jwtUtil) {
+    public AuthController(
+            AuthService authService,
+            JwtUtil jwtUtil,
+            PasswordResetService passwordResetService
+    ) {
         this.authService = authService;
         this.jwtUtil = jwtUtil;
+        this.passwordResetService = passwordResetService;
     }
 
     /**
@@ -49,5 +59,39 @@ public class AuthController {
         String token = jwtUtil.generateToken(user);
 
         return ResponseEntity.ok(new JwtResponse(token));
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<JwtResponse> refreshToken(@Valid @RequestBody RefreshTokenRequest request) {
+        if (!jwtUtil.validateToken(request.getToken())) {
+            throw new IllegalArgumentException("Invalid token");
+        }
+
+        String email = jwtUtil.extractEmail(request.getToken());
+        User user = authService.getUserByEmail(email);
+        String newToken = jwtUtil.generateToken(user);
+
+        return ResponseEntity.ok(new JwtResponse(newToken));
+    }
+
+    @PostMapping("/reset-request")
+    public ResponseEntity<PasswordResetRequestResponse> requestPasswordReset(
+            @Valid @RequestBody PasswordResetRequest request
+    ) {
+        String token = passwordResetService.createResetToken(request.getEmail());
+        return ResponseEntity.ok(
+                new PasswordResetRequestResponse(
+                        "If the account exists, a reset token has been generated.",
+                        token
+                )
+        );
+    }
+
+    @PostMapping("/reset-confirm")
+    public ResponseEntity<?> confirmPasswordReset(
+            @Valid @RequestBody PasswordResetConfirmRequest request
+    ) {
+        passwordResetService.resetPassword(request.getToken(), request.getNewPassword());
+        return ResponseEntity.ok("Password reset successfully");
     }
 }

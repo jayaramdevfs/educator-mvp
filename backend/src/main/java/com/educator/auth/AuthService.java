@@ -6,6 +6,7 @@ import com.educator.users.User;
 import com.educator.users.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.regex.Pattern;
 
@@ -33,19 +34,16 @@ public class AuthService {
      * Register a new user with STUDENT role
      */
     public void register(String email, String rawPassword) {
+        String normalizedEmail = email.trim().toLowerCase();
 
-        if (userRepository.existsByEmail(email)) {
+        if (userRepository.existsByEmail(normalizedEmail)) {
             throw new IllegalArgumentException("Email already registered");
         }
 
-        if (rawPassword == null || !STRONG_PASSWORD_PATTERN.matcher(rawPassword).matches()) {
-            throw new IllegalArgumentException(
-                    "Password must be at least 8 characters and include at least one uppercase letter and one digit"
-            );
-        }
+        validateStrongPassword(rawPassword);
 
         User user = new User(
-                email,
+                normalizedEmail,
                 passwordEncoder.encode(rawPassword)
         );
 
@@ -62,7 +60,7 @@ public class AuthService {
      */
     public User authenticate(String email, String rawPassword) {
 
-        User user = userRepository.findByEmail(email)
+        User user = userRepository.findByEmail(email.trim().toLowerCase())
                 .orElseThrow(() -> new IllegalArgumentException("Invalid credentials"));
 
         if (!passwordEncoder.matches(rawPassword, user.getPassword())) {
@@ -70,5 +68,26 @@ public class AuthService {
         }
 
         return user;
+    }
+
+    @Transactional(readOnly = true)
+    public User getUserByEmail(String email) {
+        return userRepository.findByEmail(email.trim().toLowerCase())
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+    }
+
+    public void resetPassword(String email, String newPassword) {
+        validateStrongPassword(newPassword);
+        User user = getUserByEmail(email);
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+    }
+
+    private void validateStrongPassword(String rawPassword) {
+        if (rawPassword == null || !STRONG_PASSWORD_PATTERN.matcher(rawPassword).matches()) {
+            throw new IllegalArgumentException(
+                    "Password must be at least 8 characters and include at least one uppercase letter and one digit"
+            );
+        }
     }
 }

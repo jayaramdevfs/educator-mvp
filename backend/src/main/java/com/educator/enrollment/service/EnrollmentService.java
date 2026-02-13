@@ -7,6 +7,8 @@ import com.educator.enrollment.entity.Enrollment;
 import com.educator.enrollment.entity.EnrollmentStatus;
 import com.educator.enrollment.repository.EnrollmentRepository;
 import com.educator.users.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -72,6 +74,11 @@ public class EnrollmentService {
     @Transactional(readOnly = true)
     public List<Enrollment> getMyEnrollments(User user) {
         return enrollmentRepository.findAllByUser(user);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<Enrollment> getMyEnrollments(User user, Pageable pageable) {
+        return enrollmentRepository.findAllByUser(user, pageable);
     }
 
     @Transactional(readOnly = true)

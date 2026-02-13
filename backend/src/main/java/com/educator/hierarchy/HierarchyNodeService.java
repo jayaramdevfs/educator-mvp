@@ -3,6 +3,8 @@ package com.educator.hierarchy;
 import com.educator.common.exception.BusinessValidationException;
 import com.educator.common.exception.DuplicateResourceException;
 import com.educator.common.exception.ResourceNotFoundException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -123,8 +125,18 @@ public class HierarchyNodeService {
     }
 
     @Transactional(readOnly = true)
+    public Page<HierarchyNode> getRootNodes(Pageable pageable) {
+        return repository.findByParentIsNullAndIsDeletedFalse(pageable);
+    }
+
+    @Transactional(readOnly = true)
     public List<HierarchyNode> getChildren(Long parentId) {
         return repository.findByParentIdAndIsDeletedFalseOrderBySortOrderAsc(parentId);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<HierarchyNode> getChildren(Long parentId, Pageable pageable) {
+        return repository.findByParentIdAndIsDeletedFalse(parentId, pageable);
     }
 
     /* =====================

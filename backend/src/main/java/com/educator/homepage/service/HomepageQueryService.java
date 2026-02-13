@@ -4,6 +4,8 @@ import com.educator.homepage.dto.HomepageResponse;
 import com.educator.homepage.entity.HomepageSection;
 import com.educator.homepage.repository.HomepageSectionRepository;
 import com.educator.homepage.repository.SectionBlockRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -28,5 +30,13 @@ public class HomepageQueryService {
                         blockRepo.findAllBySectionIdAndEnabledTrueOrderByOrderIndexAsc(section.getId())
                 ))
                 .collect(Collectors.toList());
+    }
+
+    public Page<HomepageResponse> getHomepage(Pageable pageable) {
+        return sectionRepo.findAllByEnabledTrueOrderByOrderIndexAsc(pageable)
+                .map(section -> new HomepageResponse(
+                        section,
+                        blockRepo.findAllBySectionIdAndEnabledTrueOrderByOrderIndexAsc(section.getId())
+                ));
     }
 }

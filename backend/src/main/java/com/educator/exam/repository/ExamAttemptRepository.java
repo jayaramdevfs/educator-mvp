@@ -2,6 +2,8 @@ package com.educator.exam.repository;
 
 import com.educator.exam.entity.ExamAttempt;
 import com.educator.exam.enums.AttemptStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -33,4 +35,12 @@ public interface ExamAttemptRepository extends JpaRepository<ExamAttempt, UUID> 
             UUID userId,
             AttemptStatus status
     );
+
+    Page<ExamAttempt> findByExamIdAndUserIdOrderByStartedAtDesc(
+            UUID examId,
+            UUID userId,
+            Pageable pageable
+    );
+
+    List<ExamAttempt> findByStatus(AttemptStatus status);
 }
