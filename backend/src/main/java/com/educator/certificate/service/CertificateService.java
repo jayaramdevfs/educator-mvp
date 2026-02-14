@@ -5,6 +5,7 @@ import com.educator.certificate.enums.CertificateStatus;
 import com.educator.certificate.repository.CertificateRepository;
 import com.educator.completion.entity.CourseCompletion;
 import com.educator.completion.repository.CourseCompletionRepository;
+import com.educator.notification.service.NotificationPersistenceService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -19,13 +20,16 @@ public class CertificateService {
 
     private final CertificateRepository certificateRepository;
     private final CourseCompletionRepository completionRepository;
+    private final NotificationPersistenceService notificationPersistenceService;
 
     public CertificateService(
             CertificateRepository certificateRepository,
-            CourseCompletionRepository completionRepository
+            CourseCompletionRepository completionRepository,
+            NotificationPersistenceService notificationPersistenceService
     ) {
         this.certificateRepository = certificateRepository;
         this.completionRepository = completionRepository;
+        this.notificationPersistenceService = notificationPersistenceService;
     }
 
     public Certificate generate(UUID completionId) {
@@ -33,14 +37,31 @@ public class CertificateService {
                 .orElseThrow(() -> new IllegalArgumentException("Course completion not found"));
 
         return certificateRepository
-                .findByCourseIdAndUserId(completion.getCourseId(), completion.getUserId())
+                .findByCourseIdAndUserId(
+                        completion.getCourseId(),
+                        completion.getUserId()
+                )
                 .orElseGet(() -> {
+
                     Certificate certificate = new Certificate();
                     certificate.setCourseId(completion.getCourseId());
                     certificate.setUserId(completion.getUserId());
                     certificate.setCourseCompletionId(completion.getId());
                     certificate.setStatus(CertificateStatus.GENERATED);
-                    return certificateRepository.save(certificate);
+
+                    Certificate saved = certificateRepository.save(certificate);
+
+                    // 🔔 B3.3 — Notify only when certificate newly generated
+                    notificationPersistenceService.persist(
+                            completion.getUserId(),
+                            com.educator.notification.entity.NotificationType.CERTIFICATE_ELIGIBLE,
+                            "Certificate Generated",
+                            "Your certificate for course (ID: " +
+                                    completion.getCourseId() +
+                                    ") has been generated."
+                    );
+
+                    return saved;
                 });
     }
 

@@ -10,11 +10,8 @@ import com.educator.exam.entity.ExamAttemptAnswer;
 import com.educator.exam.entity.ExamOption;
 import com.educator.exam.entity.ExamQuestion;
 import com.educator.exam.enums.AttemptStatus;
-import com.educator.exam.repository.ExamAttemptAnswerRepository;
-import com.educator.exam.repository.ExamAttemptRepository;
-import com.educator.exam.repository.ExamOptionRepository;
-import com.educator.exam.repository.ExamQuestionRepository;
-import com.educator.exam.repository.ExamRepository;
+import com.educator.exam.repository.*;
+import com.educator.notification.service.NotificationPersistenceService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -22,14 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -44,6 +34,7 @@ public class ExamAttemptService {
     private final ExamOptionRepository examOptionRepository;
     private final CourseCompletionRepository courseCompletionRepository;
     private final CertificateService certificateService;
+    private final NotificationPersistenceService notificationPersistenceService;
 
     public ExamAttemptService(
             ExamRepository examRepository,
@@ -52,7 +43,8 @@ public class ExamAttemptService {
             ExamAttemptAnswerRepository examAttemptAnswerRepository,
             ExamQuestionRepository examQuestionRepository,
             ExamOptionRepository examOptionRepository,
-            CertificateService certificateService
+            CertificateService certificateService,
+            NotificationPersistenceService notificationPersistenceService
     ) {
         this.examRepository = examRepository;
         this.examAttemptRepository = examAttemptRepository;
@@ -61,6 +53,7 @@ public class ExamAttemptService {
         this.examQuestionRepository = examQuestionRepository;
         this.examOptionRepository = examOptionRepository;
         this.certificateService = certificateService;
+        this.notificationPersistenceService = notificationPersistenceService;
     }
 
     public ExamAttempt startAttempt(UUID examId, UUID userId) {
@@ -112,20 +105,31 @@ public class ExamAttemptService {
         }
         examAttemptAnswerRepository.saveAll(answers);
 
-        List<ExamQuestion> questions = examQuestionRepository.findByExamIdOrderByDisplayOrderAsc(attempt.getExamId());
+        List<ExamQuestion> questions =
+                examQuestionRepository.findByExamIdOrderByDisplayOrderAsc(attempt.getExamId());
+
         List<UUID> questionIds = questions.stream().map(ExamQuestion::getId).toList();
-        List<ExamOption> options = examOptionRepository.findByQuestionIdInOrderByDisplayOrderAsc(questionIds);
+
+        List<ExamOption> options =
+                examOptionRepository.findByQuestionIdInOrderByDisplayOrderAsc(questionIds);
 
         Map<UUID, ExamOption> correctOptionByQuestion = options.stream()
                 .filter(ExamOption::isCorrect)
-                .collect(Collectors.toMap(ExamOption::getQuestionId, Function.identity(), (a, b) -> a));
+                .collect(Collectors.toMap(
+                        ExamOption::getQuestionId,
+                        Function.identity(),
+                        (a, b) -> a
+                ));
 
         int totalQuestions = questionIds.size();
         int correctAnswers = 0;
 
         for (ExamAttemptAnswer answer : answers) {
-            ExamOption correctOption = correctOptionByQuestion.get(answer.getQuestionId());
-            if (correctOption != null && correctOption.getId().equals(answer.getSelectedOptionId())) {
+            ExamOption correctOption =
+                    correctOptionByQuestion.get(answer.getQuestionId());
+
+            if (correctOption != null &&
+                    correctOption.getId().equals(answer.getSelectedOptionId())) {
                 correctAnswers++;
             }
         }
@@ -144,16 +148,45 @@ public class ExamAttemptService {
 
         examAttemptRepository.save(attempt);
 
+        // 🔔 B3.2 — Exam Result Notification (Always triggered after evaluation)
         if (Boolean.TRUE.equals(attempt.getPassed())) {
-            CourseCompletion completion = courseCompletionRepository
-                    .findByCourseIdAndUserId(exam.getCourseId(), attempt.getUserId())
-                    .orElseGet(() -> {
-                        CourseCompletion newCompletion = new CourseCompletion();
-                        newCompletion.setCourseId(exam.getCourseId());
-                        newCompletion.setUserId(attempt.getUserId());
-                        newCompletion.setExamAttemptId(attempt.getId());
-                        return courseCompletionRepository.save(newCompletion);
-                    });
+            notificationPersistenceService.notifyExamPassed(
+                    attempt.getUserId(),
+                    exam.getCourseId()
+            );
+        } else {
+            notificationPersistenceService.notifyExamFailed(
+                    attempt.getUserId(),
+                    exam.getCourseId()
+            );
+        }
+
+        if (Boolean.TRUE.equals(attempt.getPassed())) {
+
+            CourseCompletion completion =
+                    courseCompletionRepository
+                            .findByCourseIdAndUserId(
+                                    exam.getCourseId(),
+                                    attempt.getUserId()
+                            )
+                            .orElseGet(() -> {
+                                CourseCompletion newCompletion =
+                                        new CourseCompletion();
+                                newCompletion.setCourseId(exam.getCourseId());
+                                newCompletion.setUserId(attempt.getUserId());
+                                newCompletion.setExamAttemptId(attempt.getId());
+
+                                CourseCompletion saved =
+                                        courseCompletionRepository.save(newCompletion);
+
+                                // 🔔 B3.1 — Notify only when new completion created
+                                notificationPersistenceService.notifyCourseCompleted(
+                                        attempt.getUserId(),
+                                        exam.getCourseId()
+                                );
+
+                                return saved;
+                            });
 
             certificateService.generate(completion.getId());
         }
@@ -163,11 +196,13 @@ public class ExamAttemptService {
 
     @Transactional(readOnly = true)
     public Page<ExamAttempt> getAttemptHistory(UUID examId, UUID userId, Pageable pageable) {
-        return examAttemptRepository.findByExamIdAndUserIdOrderByStartedAtDesc(examId, userId, pageable);
+        return examAttemptRepository.findByExamIdAndUserIdOrderByStartedAtDesc(
+                examId, userId, pageable);
     }
 
     @Transactional(readOnly = true)
     public ExamAttemptReviewResponse getAttemptReview(UUID attemptId, UUID userId) {
+
         ExamAttempt attempt = examAttemptRepository.findById(attemptId)
                 .orElseThrow(() -> new IllegalArgumentException("Attempt not found"));
 
@@ -191,6 +226,7 @@ public class ExamAttemptService {
                 .collect(Collectors.groupingBy(ExamOption::getQuestionId));
 
         List<ExamAttemptReviewResponse.QuestionReview> questionReviews = new ArrayList<>();
+
         for (ExamQuestion question : questions) {
             ExamAttemptAnswer answer = answerByQuestion.get(question.getId());
             List<ExamOption> questionOptions = optionsByQuestion.getOrDefault(question.getId(), List.of());
@@ -230,12 +266,12 @@ public class ExamAttemptService {
 
     @Scheduled(fixedDelayString = "${app.exam.expiry-check-ms:60000}")
     public void expireTimedOutAttempts() {
-        List<ExamAttempt> inProgressAttempts = examAttemptRepository.findByStatus(AttemptStatus.IN_PROGRESS);
+        List<ExamAttempt> inProgressAttempts =
+                examAttemptRepository.findByStatus(AttemptStatus.IN_PROGRESS);
+
         for (ExamAttempt attempt : inProgressAttempts) {
             Exam exam = examRepository.findById(attempt.getExamId()).orElse(null);
-            if (exam == null) {
-                continue;
-            }
+            if (exam == null) continue;
 
             if (isTimedOut(attempt, exam.getTimeLimitMinutes())) {
                 markExpired(attempt);
@@ -244,11 +280,9 @@ public class ExamAttemptService {
     }
 
     private boolean isTimedOut(ExamAttempt attempt, Integer timeLimitMinutes) {
-        if (timeLimitMinutes == null || timeLimitMinutes <= 0) {
-            return false;
-        }
-
-        return LocalDateTime.now().isAfter(attempt.getStartedAt().plusMinutes(timeLimitMinutes));
+        if (timeLimitMinutes == null || timeLimitMinutes <= 0) return false;
+        return LocalDateTime.now()
+                .isAfter(attempt.getStartedAt().plusMinutes(timeLimitMinutes));
     }
 
     private void markExpired(ExamAttempt attempt) {
@@ -260,18 +294,24 @@ public class ExamAttemptService {
     }
 
     private String buildQuestionOrder(Exam exam) {
-        List<ExamQuestion> questions = examQuestionRepository.findByExamIdOrderByDisplayOrderAsc(exam.getId());
-        List<UUID> questionIds = new ArrayList<>(questions.stream().map(ExamQuestion::getId).toList());
+        List<ExamQuestion> questions =
+                examQuestionRepository.findByExamIdOrderByDisplayOrderAsc(exam.getId());
+
+        List<UUID> questionIds =
+                new ArrayList<>(questions.stream().map(ExamQuestion::getId).toList());
 
         if (exam.isShuffleQuestions()) {
             Collections.shuffle(questionIds);
         }
 
-        return questionIds.stream().map(UUID::toString).collect(Collectors.joining(","));
+        return questionIds.stream()
+                .map(UUID::toString)
+                .collect(Collectors.joining(","));
     }
 
     private List<ExamQuestion> getQuestionsInAttemptOrder(ExamAttempt attempt) {
-        List<ExamQuestion> orderedByDisplay = examQuestionRepository.findByExamIdOrderByDisplayOrderAsc(attempt.getExamId());
+        List<ExamQuestion> orderedByDisplay =
+                examQuestionRepository.findByExamIdOrderByDisplayOrderAsc(attempt.getExamId());
 
         if (attempt.getQuestionOrder() == null || attempt.getQuestionOrder().isBlank()) {
             return orderedByDisplay;

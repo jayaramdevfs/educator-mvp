@@ -103,3 +103,38 @@ All Sprint 9 public pages use the same purple/pink visual palette established in
 ---
 
 **Sprint 9 is complete and closed.**
+
+Use these local URLs:
+1.
+http://localhost:3000/
+2.
+http://localhost:3000/catalog
+3.
+http://localhost:3000/courses/11 (replace 11 with a real course id)
+4.
+http://localhost:3000/login
+5.
+http://localhost:3000/login-new
+6.
+http://localhost:3000/register
+7.
+http://localhost:3000/dashboard (protected)
+8.
+http://localhost:3000/learner (protected)
+9.
+http://localhost:3000/instructor (protected)
+10.
+http://localhost:3000/admin (protected)
+11.
+http://localhost:3000/cinematic-demo
+12.
+http://localhost:3000/does-not-exist (to verify 404 page)
+Backend quick-check URLs:
+13.
+http://localhost:8080/actuator/health
+14.
+http://localhost:8080/api/public/homepage
+15.
+http://localhost:8080/api/public/courses/search?q=history&page=0&size=20
+16.
+http://localhost:8080/api/hierarchy/roots

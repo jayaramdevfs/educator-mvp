@@ -25,11 +25,15 @@ public class LearnerNotificationService {
     }
 
     public Notification markRead(UUID userId, UUID notificationId) {
-        Notification notification = notificationRepository.findById(notificationId)
+
+        // 🔒 Secure DB-level ownership validation
+        Notification notification = notificationRepository
+                .findByIdAndUserId(notificationId, userId)
                 .orElseThrow(() -> new IllegalArgumentException("Notification not found"));
 
-        if (!notification.getUserId().equals(userId)) {
-            throw new IllegalArgumentException("Notification does not belong to authenticated user");
+        // Idempotent guard
+        if (notification.isRead()) {
+            return notification;
         }
 
         notification.setRead(true);

@@ -1136,8 +1136,8 @@ Navigation Bar, Sidebar, Auth Guard, JWT Token Manager, API Client (Axios), Data
 
 | # | Task | Details |
 |---|---|---|
-| B3.1 | Auto-notification on course completion | CourseCompletion -> COURSE_COMPLETED notification |
-| B3.2 | Auto-notification on exam pass/fail | Evaluation -> EXAM_PASSED or EXAM_FAILED notification |
+| B3.1 | Auto-notification on course completion | CourseCompletion -> COURSE_COMPLETED notification |COMPLETED
+| B3.2 | Auto-notification on exam pass/fail | Evaluation -> EXAM_PASSED or EXAM_FAILED notification | COMPLETED
 | B3.3 | Auto-certificate on completion | CourseCompletion + exam passed -> Certificate (GENERATED) |
 | B3.4 | Add negative exam marking | negativeMarkPercentage field, scoring logic update |
 | B3.5 | Fix API issues from frontend integration | Buffer for response shape fixes |
