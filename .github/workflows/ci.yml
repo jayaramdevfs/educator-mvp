@@ -11,6 +11,10 @@ jobs:
     name: Backend Tests
     runs-on: ubuntu-latest
 
+    defaults:
+      run:
+        working-directory: backend
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -22,17 +26,21 @@ jobs:
           java-version: "17"
           cache: maven
 
-      - name: Ensure Maven wrapper is executable
-        working-directory: backend
-        run: chmod +x ./mvnw
+      - name: Make Maven Wrapper Executable
+        run: |
+          chmod +x mvnw
+          ls -la mvnw
 
-      - name: Run backend tests
-        working-directory: backend
+      - name: Run Backend Tests
         run: ./mvnw -B test
 
   frontend:
     name: Frontend Lint/Test/Build
     runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: frontend
 
     steps:
       - name: Checkout
@@ -46,17 +54,13 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
 
       - name: Install dependencies
-        working-directory: frontend
         run: npm ci
 
       - name: Lint
-        working-directory: frontend
         run: npm run lint
 
       - name: Run tests
-        working-directory: frontend
         run: npm run test
 
       - name: Build
-        working-directory: frontend
         run: npm run build
