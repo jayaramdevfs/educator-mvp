@@ -60,7 +60,7 @@ class LearnerNotificationServiceTest {
         UUID userId = UUID.randomUUID();
         UUID notificationId = UUID.randomUUID();
         Notification notification = notificationFor(userId);
-        when(notificationRepository.findById(notificationId)).thenReturn(Optional.of(notification));
+        when(notificationRepository.findByIdAndUserId(notificationId, userId)).thenReturn(Optional.of(notification));
         when(notificationRepository.save(notification)).thenReturn(notification);
 
         Notification result = service.markRead(userId, notificationId);
@@ -73,7 +73,7 @@ class LearnerNotificationServiceTest {
     void markRead_throwsWhenNotificationMissing() {
         UUID userId = UUID.randomUUID();
         UUID notificationId = UUID.randomUUID();
-        when(notificationRepository.findById(notificationId)).thenReturn(Optional.empty());
+        when(notificationRepository.findByIdAndUserId(notificationId, userId)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.markRead(userId, notificationId))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -84,7 +84,7 @@ class LearnerNotificationServiceTest {
     void markRead_doesNotSaveWhenNotificationMissing() {
         UUID userId = UUID.randomUUID();
         UUID notificationId = UUID.randomUUID();
-        when(notificationRepository.findById(notificationId)).thenReturn(Optional.empty());
+        when(notificationRepository.findByIdAndUserId(notificationId, userId)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.markRead(userId, notificationId))
                 .isInstanceOf(IllegalArgumentException.class);
@@ -95,23 +95,20 @@ class LearnerNotificationServiceTest {
     @Test
     void markRead_throwsWhenNotificationBelongsToDifferentUser() {
         UUID userId = UUID.randomUUID();
-        UUID otherUserId = UUID.randomUUID();
         UUID notificationId = UUID.randomUUID();
-        Notification notification = notificationFor(otherUserId);
-        when(notificationRepository.findById(notificationId)).thenReturn(Optional.of(notification));
+        // findByIdAndUserId returns empty when userId doesn't match
+        when(notificationRepository.findByIdAndUserId(notificationId, userId)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.markRead(userId, notificationId))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Notification does not belong to authenticated user");
+                .hasMessage("Notification not found");
     }
 
     @Test
     void markRead_doesNotSaveWhenNotificationBelongsToDifferentUser() {
         UUID userId = UUID.randomUUID();
-        UUID otherUserId = UUID.randomUUID();
         UUID notificationId = UUID.randomUUID();
-        Notification notification = notificationFor(otherUserId);
-        when(notificationRepository.findById(notificationId)).thenReturn(Optional.of(notification));
+        when(notificationRepository.findByIdAndUserId(notificationId, userId)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.markRead(userId, notificationId))
                 .isInstanceOf(IllegalArgumentException.class);
@@ -120,18 +117,17 @@ class LearnerNotificationServiceTest {
     }
 
     @Test
-    void markRead_keepsReadTrueWhenAlreadyRead() {
+    void markRead_returnsEarlyWhenAlreadyRead() {
         UUID userId = UUID.randomUUID();
         UUID notificationId = UUID.randomUUID();
         Notification notification = notificationFor(userId);
         notification.setRead(true);
-        when(notificationRepository.findById(notificationId)).thenReturn(Optional.of(notification));
-        when(notificationRepository.save(notification)).thenReturn(notification);
+        when(notificationRepository.findByIdAndUserId(notificationId, userId)).thenReturn(Optional.of(notification));
 
         Notification result = service.markRead(userId, notificationId);
 
         assertThat(result.isRead()).isTrue();
-        verify(notificationRepository).save(notification);
+        verify(notificationRepository, never()).save(any(Notification.class));
     }
 
     private static Notification notificationFor(UUID userId) {
@@ -140,4 +136,3 @@ class LearnerNotificationServiceTest {
         return notification;
     }
 }
-

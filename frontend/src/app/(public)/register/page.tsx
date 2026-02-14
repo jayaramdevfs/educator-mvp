@@ -12,6 +12,7 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { apiClient } from "@/lib/api/client";
 
 const registerSchema = z
   .object({
@@ -148,17 +149,29 @@ export default function RegisterPage() {
     return () => ctx.revert();
   }, [prefersReducedMotion]);
 
+  const [registerError, setRegisterError] = useState<string | null>(null);
+
   const handleSubmit = form.handleSubmit(async (values) => {
     setIsLoading(true);
+    setRegisterError(null);
 
-    // TODO: Integrate with auth service
-    console.log("Register attempt:", values.email);
+    try {
+      await apiClient.post("/api/auth/register", {
+        email: values.email,
+        password: values.password,
+      });
 
-    // Simulate registration
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-
-    // Navigate to login
-    router.push("/login-new");
+      router.push("/login-new");
+    } catch (err: unknown) {
+      const axiosError = err as { response?: { status?: number; data?: string } };
+      if (axiosError.response?.status === 409) {
+        setRegisterError("An account with this email already exists.");
+      } else {
+        setRegisterError("Registration failed. Please try again.");
+      }
+    } finally {
+      setIsLoading(false);
+    }
   });
 
   const passwordRequirements = [
@@ -376,6 +389,17 @@ export default function RegisterPage() {
                       </motion.p>
                     )}
                   </div>
+
+                  {/* Registration error */}
+                  {registerError && (
+                    <motion.p
+                      initial={{ opacity: 0, y: -4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="text-sm text-red-400 text-center"
+                    >
+                      {registerError}
+                    </motion.p>
+                  )}
 
                   {/* Submit button */}
                   <motion.div

@@ -63,7 +63,7 @@ export function AuthGuard({
           ? "/admin"
           : user.roles.includes("INSTRUCTOR")
           ? "/instructor"
-          : "/learner";
+          : "/learner/dashboard";
 
         router.replace(userDashboard);
         return;

@@ -5,6 +5,7 @@ import com.educator.certificate.enums.CertificateStatus;
 import com.educator.certificate.repository.CertificateRepository;
 import com.educator.completion.entity.CourseCompletion;
 import com.educator.completion.repository.CourseCompletionRepository;
+import com.educator.notification.service.NotificationPersistenceService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -36,6 +37,9 @@ class CertificateServiceTest {
 
     @Mock
     private CourseCompletionRepository completionRepository;
+
+    @Mock
+    private NotificationPersistenceService notificationPersistenceService;
 
     @InjectMocks
     private CertificateService service;

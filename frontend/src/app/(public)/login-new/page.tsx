@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { apiClient } from "@/lib/api/client";
+import { useAuthStore } from "@/store/auth-store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -19,6 +19,7 @@ type LoginFormData = z.infer<typeof loginSchema>;
 export default function LoginPage() {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
+  const login = useAuthStore((state) => state.login);
 
   const {
     register,
@@ -31,23 +32,18 @@ export default function LoginPage() {
   const onSubmit = async (data: LoginFormData) => {
     try {
       setError(null);
+      await login(data);
 
-      const response = await apiClient.post("/api/auth/login", data);
-
-      const token = response.data.token;
-      const roles: string[] = response.data.roles || [];
-
-      localStorage.setItem("token", token);
-
-      // ✅ Correct routing for App Router
-      if (roles.includes("ROLE_ADMIN")) {
+      // Read roles from the store after login
+      const currentUser = useAuthStore.getState().user;
+      if (currentUser?.roles.includes("ADMIN")) {
         router.push("/admin");
-      } else if (roles.includes("ROLE_INSTRUCTOR")) {
+      } else if (currentUser?.roles.includes("INSTRUCTOR")) {
         router.push("/instructor");
       } else {
-        router.push("/dashboard");
+        router.push("/learner/dashboard");
       }
-    } catch (err: any) {
+    } catch {
       setError("Invalid credentials. Please try again.");
     }
   };
@@ -64,6 +60,7 @@ export default function LoginPage() {
             <Input
               type="email"
               placeholder="Email"
+              className="h-12 border-slate-700 bg-slate-950/50 text-slate-100 placeholder:text-slate-600 focus:border-purple-500 focus:ring-purple-500/30"
               {...register("email")}
             />
             {errors.email && (
@@ -77,6 +74,7 @@ export default function LoginPage() {
             <Input
               type="password"
               placeholder="Password"
+              className="h-12 border-slate-700 bg-slate-950/50 text-slate-100 placeholder:text-slate-600 focus:border-purple-500 focus:ring-purple-500/30"
               {...register("password")}
             />
             {errors.password && (
