@@ -26,13 +26,8 @@ jobs:
           java-version: "17"
           cache: maven
 
-      - name: Make Maven Wrapper Executable
-        run: |
-          chmod +x mvnw
-          ls -la mvnw
-
       - name: Run Backend Tests
-        run: ./mvnw -B test
+        run: bash mvnw -B test
 
   frontend:
     name: Frontend Lint/Test/Build
