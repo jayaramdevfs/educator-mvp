@@ -1182,6 +1182,20 @@ Navigation Bar, Sidebar, Auth Guard, JWT Token Manager, API Client (Axios), Data
 - [x] Accessibility audit passes (WCAG 2.1 AA)
 - [x] 100+ backend tests, 75 frontend tests
 
+### Sprint 10 Stabilization (2026-02-14)
+
+| # | Fix | Details |
+|---|---|---|
+| S10.1 | Login auth store integration | Replaced raw axios with Zustand auth store, fixed token storage key mismatch |
+| S10.2 | Student redirect fix | Changed `/dashboard` to `/learner/dashboard` in login and AuthGuard |
+| S10.3 | Registration API wiring | Replaced simulated registration with actual POST to `/api/auth/register` |
+| S10.4 | Input visibility fix | Added explicit dark styling to login form inputs |
+| S10.5 | Dark theme token overhaul | Updated all CSS design tokens for dark theme (popover, card, border, input, accent) |
+| S10.6 | CertificateServiceTest fix | Added missing `NotificationPersistenceService` mock |
+| S10.7 | LearnerNotificationServiceTest fix | Updated mocks to use `findByIdAndUserId`, fixed idempotent read assertion |
+
+**Sprint 10 Status: COMPLETED AND STABILIZED**
+
 ---
 
 ## 20. Sprint 11 -- Admin Experience
@@ -1747,6 +1761,7 @@ IMPLEMENTED
 | Date | Version | Change | Reason |
 |---|---|---|---|
 | 2026-02-10 | 2.0 | Initial Master Plan created | Consolidation of TDD v1.0, Handover Review, Execution Plan, README into single source of truth |
+| 2026-02-14 | 2.1 | Sprint 10 completed and stabilized | Student experience delivered, auth bugs fixed, dark theme tokens, test failures resolved, all CI green |
 
 ---
 

@@ -2,24 +2,27 @@
 
 Full-stack LMS platform with Spring Boot backend and Next.js frontend.
 
-## Current Status (2026-02-13)
+## Current Status (2026-02-14)
 
 | Area | Status |
 |---|---|
 | Sprint 7 | Completed -- Local setup & foundation |
 | Sprint 8 | Completed -- Security hardening & auth UI |
 | Sprint 9 | Completed -- Backend completion & API polish |
+| Sprint 10 | Completed -- Student experience & stabilization |
 | Backend APIs | 50+ endpoints (auth, public, learner, admin, student, instructor) |
 | Backend tests | 162 passing |
-| Frontend pages | Homepage, catalog, course detail, login, register, 404, error pages |
-| Frontend tests | 30 passing |
-| CI/CD | GitHub Actions (backend tests + frontend lint/test/build) |
-| Next execution point | Sprint 10 -- Student Experience (`MASTER_PLAN_SOURCE OF TRUTH.md`, section 19) |
+| Frontend pages | Homepage, catalog, course detail, login, register, dashboard, courses, exam, certificates, notifications, settings, admin, instructor |
+| Frontend tests | 75 passing |
+| CI/CD | GitHub Actions (backend tests + frontend lint/test/build) -- all green |
+| Next execution point | Sprint 11 -- Admin Experience (`MASTER_PLAN_SOURCE OF TRUTH.md`, section 20) |
 
 ## Source of Truth and Handoff Docs
 
 - Master plan: `MASTER_PLAN_SOURCE OF TRUTH.md`
-- **Sprint 9 completion: `SPRINT_9_COMPLETION_SUMMARY.md`**
+- **Sprint 10 completion: `SPRINT_10_COMPLETION_SUMMARY.md`**
+- Sprint 10A backend: `Sprint 10A_backend completion summary.md`
+- Sprint 9 completion: `SPRINT_9_COMPLETION_SUMMARY.md`
 - Sprint 8 completion: `SPRINT_8_COMPLETION_SUMMARY.md`
 - Sprint 7 closure: `SPRINT_7_FINAL_HANDOFF.md`
 - API response shapes: `docs/B0.6_API_RESPONSE_SHAPES.md`
@@ -84,8 +87,8 @@ npm run dev
 The backend automatically creates an admin user on first startup:
 
 ```
-Email:    admin@educator.local
-Password: Admin@123
+Email:    jayaramadmin@educate.com
+Password: Rama@1994
 ```
 
 Use these credentials to test the auth flow.
@@ -136,6 +139,22 @@ npm run build
 ```
 
 ## Sprint History
+
+### Sprint 10 -- Student Experience & Stabilization (2026-02-14)
+
+**Sprint 10A Backend (5 tasks):** Automated notification system for course completion, exam pass/fail, and certificate generation. DB-level ownership validation for notifications (`findByIdAndUserId`). Idempotent read-state hardening.
+
+**Sprint 10 Frontend (8 tasks):** Learner dashboard with enrollment cards, course learning page with progress, exam taking page with timer, certificates page, notifications page with mark-read, settings page with profile/password management, notification bell component.
+
+**Sprint 10 Stabilization (7 fixes):**
+- Login page: integrated with Zustand auth store (was using raw axios), fixed student redirect to `/learner/dashboard`
+- Register page: wired to backend API (was simulated with setTimeout)
+- Design tokens: full dark theme overhaul for dropdowns, popovers, cards, inputs
+- AuthGuard: fixed student fallback redirect from `/learner` to `/learner/dashboard`
+- CertificateServiceTest: added missing `NotificationPersistenceService` mock
+- LearnerNotificationServiceTest: updated mocks to match refactored `findByIdAndUserId` method
+
+**Validation:** 162 backend tests passing, 75 frontend tests passing, lint clean, build green.
 
 ### Sprint 9 -- Backend Completion & API Polish (2026-02-13)
 
@@ -194,7 +213,7 @@ See `docs/D0.2_GIT_BRANCHING_STRATEGY.md` for workflow details.
 | 7 | Local Setup & Foundation | Completed |
 | 8 | Security Hardening & Auth UI | Completed |
 | 9 | Backend Completion & API Polish | Completed |
-| 10 | Student Experience | Next |
+| 10 | Student Experience & Stabilization | Completed |
 | 11 | Admin Experience | Planned |
 | 12 | Instructor, Polish & Integration | Planned |
 | 13 | Testing, Performance & Pre-Deploy | Planned |
