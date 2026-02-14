@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./mvnw compile:*)",
+      "Bash(npx next build)",
+      "Bash(ls:*)",
+      "Bash(npx vitest:*)"
+    ]
+  }
+}

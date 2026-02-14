@@ -2,11 +2,12 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { BookOpen, User, LogOut, Settings, Menu, X, Shield, GraduationCap } from "lucide-react";
+import { BookOpen, User, LogOut, Settings, Menu, X, Shield, GraduationCap, Bell as BellIcon, Award } from "lucide-react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuthStore } from "@/store/auth-store";
 import { Button } from "@/components/ui/button";
+import { NotificationBell } from "@/components/learner/notification-bell";
 
 export function TopNav() {
   const router = useRouter();
@@ -43,8 +44,8 @@ export function TopNav() {
 
     return [
       { href: "/learner/dashboard", label: "Dashboard", icon: BookOpen },
-      { href: "/learner/courses", label: "My Courses", icon: BookOpen },
-      { href: "/learner/certificates", label: "Certificates", icon: GraduationCap },
+      { href: "/learner/notifications", label: "Notifications", icon: BellIcon },
+      { href: "/learner/certificates", label: "Certificates", icon: Award },
     ];
   };
 
@@ -99,6 +100,11 @@ export function TopNav() {
           <div className="flex items-center gap-4">
             {isAuthenticated ? (
               <>
+                {/* Notification Bell (Desktop) */}
+                <div className="hidden md:block">
+                  <NotificationBell />
+                </div>
+
                 {/* User Menu (Desktop) */}
                 <div className="relative hidden md:block">
                   <motion.button

@@ -1138,49 +1138,49 @@ Navigation Bar, Sidebar, Auth Guard, JWT Token Manager, API Client (Axios), Data
 |---|---|---|
 | B3.1 | Auto-notification on course completion | CourseCompletion -> COURSE_COMPLETED notification |COMPLETED
 | B3.2 | Auto-notification on exam pass/fail | Evaluation -> EXAM_PASSED or EXAM_FAILED notification | COMPLETED
-| B3.3 | Auto-certificate on completion | CourseCompletion + exam passed -> Certificate (GENERATED) |
-| B3.4 | Add negative exam marking | negativeMarkPercentage field, scoring logic update |
-| B3.5 | Fix API issues from frontend integration | Buffer for response shape fixes |
+| B3.3 | Auto-certificate on completion | CourseCompletion + exam passed -> Certificate (GENERATED) | COMPLETED			
+| B3.4 | Add negative exam marking | negativeMarkPercentage field, scoring logic update | COMPLETED
+| B3.5 | Fix API issues from frontend integration | Buffer for response shape fixes |COMPLETED
 
 ### Frontend Tasks
 
 | # | Task | Details |
 |---|---|---|
-| F3.1 | Build Student Dashboard | Enrolled courses grid, progress bars, status badges, "Resume" |
-| F3.2 | Build Course Learning View | Collapsible lesson tree sidebar, content area, "Mark Complete" |
-| F3.3 | Build lesson content renderers | TEXT: HTML; VIDEO: iframe; DOCUMENT: PDF link/viewer |
-| F3.4 | Build Exam Start Page | Rules, timer info, attempts remaining, "Start" |
-| F3.5 | Build Exam Taking Page | Questions, radio options, navigation, timer, submit + confirm |
-| F3.6 | Build Exam Results Page | Score card, pass/fail, question breakdown, explanations |
-| F3.7 | Build Exam Attempt History | Table of past attempts |
-| F3.8 | Build Notifications Page | List with read/unread styling, mark-as-read |
-| F3.9 | Build Notification Bell (nav) | Unread count badge, dropdown top 5, "View All" |
-| F3.10 | Build Certificates Page | Certificate cards, download button |
-| F3.11 | Build Profile / Settings Page | Display email, edit name, change password |
-| F3.12 | Build enrollment flow | Enroll -> success -> redirect to learning view |
-| F3.13 | Build drop enrollment flow | "Drop Course" with confirmation |
-| F3.14 | Build password reset pages | Request reset form, set new password form |
+| F3.1 | Build Student Dashboard | Enrolled courses grid, progress bars, status badges, "Resume" | COMPLETED
+| F3.2 | Build Course Learning View | Collapsible lesson tree sidebar, content area, "Mark Complete" | COMPLETED
+| F3.3 | Build lesson content renderers | TEXT: HTML; VIDEO: iframe; DOCUMENT: PDF link/viewer | COMPLETED
+| F3.4 | Build Exam Start Page | Rules, timer info, attempts remaining, "Start" | COMPLETED
+| F3.5 | Build Exam Taking Page | Questions, radio options, navigation, timer, submit + confirm | COMPLETED
+| F3.6 | Build Exam Results Page | Score card, pass/fail, question breakdown, explanations | COMPLETED
+| F3.7 | Build Exam Attempt History | Table of past attempts | COMPLETED
+| F3.8 | Build Notifications Page | List with read/unread styling, mark-as-read | COMPLETED
+| F3.9 | Build Notification Bell (nav) | Unread count badge, dropdown top 5, "View All" | COMPLETED
+| F3.10 | Build Certificates Page | Certificate cards, download button | COMPLETED
+| F3.11 | Build Profile / Settings Page | Display email, edit name, change password | COMPLETED
+| F3.12 | Build enrollment flow | Enroll -> success -> redirect to learning view | COMPLETED
+| F3.13 | Build drop enrollment flow | "Drop Course" with confirmation | COMPLETED
+| F3.14 | Build password reset pages | Request reset form, set new password form | COMPLETED
 
 ### Testing Tasks
 
 | # | Task | Details |
 |---|---|---|
-| T3.1 | Integration test: full student journey | Register -> login -> browse -> enroll -> lessons -> exam -> results -> certificate |
-| T3.2 | Frontend component tests | Dashboard, learning view, exam taking, results |
-| T3.3 | Exam edge cases | Timer expiry, max attempts, shuffle correctness |
-| T3.4 | Notification trigger tests | Auto-created on completion, exam pass/fail |
-| T3.5 | Accessibility audit | Screen reader, keyboard navigation, color contrast |
+| T3.1 | Integration test: full student journey | Register -> login -> browse -> enroll -> lessons -> exam -> results -> certificate | COMPLETED
+| T3.2 | Frontend component tests | Dashboard, learning view, exam taking, results | COMPLETED
+| T3.3 | Exam edge cases | Timer expiry, max attempts, shuffle correctness | COMPLETED
+| T3.4 | Notification trigger tests | Auto-created on completion, exam pass/fail | COMPLETED
+| T3.5 | Accessibility audit | Screen reader, keyboard navigation, color contrast | COMPLETED
 
 ### Exit Criteria
 
-- [ ] Student can register, login, browse, enroll, complete lessons, take exam, see results
-- [ ] Exam timer counts down and enforces limit
-- [ ] Notifications appear on completion and exam results
-- [ ] Certificates appear after completion
-- [ ] Profile and password management work
-- [ ] All student screens responsive (mobile, tablet, desktop)
-- [ ] Accessibility audit passes (WCAG 2.1 AA)
-- [ ] 100+ backend tests, 40+ frontend tests
+- [x] Student can register, login, browse, enroll, complete lessons, take exam, see results
+- [x] Exam timer counts down and enforces limit
+- [x] Notifications appear on completion and exam results
+- [x] Certificates appear after completion
+- [x] Profile and password management work
+- [x] All student screens responsive (mobile, tablet, desktop)
+- [x] Accessibility audit passes (WCAG 2.1 AA)
+- [x] 100+ backend tests, 75 frontend tests
 
 ---
 
