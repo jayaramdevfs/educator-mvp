@@ -15,7 +15,15 @@
       "Bash(npm run build:*)",
       "Bash(curl:*)",
       "Bash(grep:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(find:*)",
+      "Bash(./mvnw clean compile:*)",
+      "Bash(npx next build:*)",
+      "Bash(npx vitest run:*)",
+      "Bash(STUDENT_TOKEN=\"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0c3R1ZGVudEB0ZXN0LmNvbSIsInJvbGVzIjpbIlNUVURFTlQiXSwiaWF0IjoxNzcxMTAwODAyLCJleHAiOjE3NzExMDQ0MDJ9.db6vhwjWsAvuWJINGzBb5hC3VchEcXYPhP4_9bkMv-4\")",
+      "Bash(mvnw.cmd compile:*)",
+      "Bash(cmd /c:*)",
+      "Bash(./mvnw compile:*)"
     ]
   }
 }

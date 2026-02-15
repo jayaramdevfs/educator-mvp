@@ -90,10 +90,13 @@ export default function CourseLearningPage() {
   });
 
   // Fetch lessons
-  const { data: lessons = [], isLoading: lessonsLoading } = useQuery({
+  // Fetch lessons
+  const { data: lessonsData, isLoading: lessonsLoading } = useQuery({
     queryKey: ["course-lessons", courseId],
-    queryFn: () => apiGet<LessonNode[]>(`/api/public/lessons/course/${courseId}`),
+    queryFn: () => apiGet<{ content: LessonNode[] }>(`/api/public/lessons/course/${courseId}?page=0&size=100`),
   });
+
+  const lessons = lessonsData?.content ?? [];
 
   // Enroll mutation
   const enrollMutation = useMutation({
@@ -102,7 +105,7 @@ export default function CourseLearningPage() {
       toast.success("Successfully enrolled!");
       queryClient.invalidateQueries({ queryKey: ["learner-enrollments"] });
       // Start progress tracking
-      apiPost(`/api/learner/progress/enrollment/${data.id}/start`).catch(() => {});
+      apiPost(`/api/learner/progress/enrollment/${data.id}/start`).catch(() => { });
     },
     onError: () => {
       toast.error("Failed to enroll. You may already be enrolled.");
@@ -362,11 +365,10 @@ function LessonTreeItem({
           onSelect(lesson.id);
           if (hasChildren) onToggle(lesson.id);
         }}
-        className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors ${
-          isSelected
+        className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors ${isSelected
             ? "bg-purple-500/15 text-purple-300"
             : "text-slate-300 hover:bg-slate-800/60 hover:text-slate-100"
-        }`}
+          }`}
         style={{ paddingLeft: `${12 + depth * 16}px` }}
       >
         {hasChildren ? (

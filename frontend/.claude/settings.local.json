@@ -4,7 +4,16 @@
       "Bash(./mvnw compile:*)",
       "Bash(npx next build)",
       "Bash(ls:*)",
-      "Bash(npx vitest:*)"
+      "Bash(npx vitest:*)",
+      "Bash(bash mvnw test:*)",
+      "Bash(find:*)",
+      "Bash(npm run lint:*)",
+      "Bash(bash mvnw:*)",
+      "Bash(npm run test:*)",
+      "Bash(npm run build:*)",
+      "Bash(git status:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ]
   }
 }

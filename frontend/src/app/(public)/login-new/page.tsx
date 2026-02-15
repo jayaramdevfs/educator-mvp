@@ -9,12 +9,28 @@ import { useAuthStore } from "@/store/auth-store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL?.trim() || "http://localhost:8080";
+
 const loginSchema = z.object({
   email: z.string().email(),
   password: z.string().min(6),
 });
 
 type LoginFormData = z.infer<typeof loginSchema>;
+
+interface LoginApiResponse {
+  token: string;
+}
+
+function decodeJwtPayload(token: string): { sub: string; roles: string[] } {
+  const parts = token.split(".");
+  if (parts.length !== 3) {
+    throw new Error("Invalid JWT format");
+  }
+  const payload = JSON.parse(atob(parts[1]));
+  return { sub: payload.sub, roles: payload.roles ?? [] };
+}
 
 export default function LoginPage() {
   const router = useRouter();
@@ -32,13 +48,29 @@ export default function LoginPage() {
   const onSubmit = async (data: LoginFormData) => {
     try {
       setError(null);
-      await login(data);
 
-      // Read roles from the store after login
-      const currentUser = useAuthStore.getState().user;
-      if (currentUser?.roles.includes("ADMIN")) {
+      const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email: data.email, password: data.password }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Invalid credentials");
+      }
+
+      const result: LoginApiResponse = await response.json();
+      const { sub: email, roles } = decodeJwtPayload(result.token);
+
+      // login() now syncs to both Zustand and token-storage
+      login(result.token, { id: 0, email, roles });
+
+      // Redirect based on role
+      if (roles.includes("ADMIN")) {
         router.push("/admin");
-      } else if (currentUser?.roles.includes("INSTRUCTOR")) {
+      } else if (roles.includes("INSTRUCTOR")) {
         router.push("/instructor");
       } else {
         router.push("/learner/dashboard");
@@ -49,65 +81,65 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-slate-950 via-purple-950 to-slate-900 p-6">
-      <div className="w-full max-w-md bg-slate-900 p-8 rounded-xl border border-slate-800 shadow-lg">
-        <h1 className="text-2xl font-bold text-purple-200 mb-6 text-center">
-          Sign In
-        </h1>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-slate-950 via-purple-950 to-slate-900 p-6">
+        <div className="w-full max-w-md bg-slate-900 p-8 rounded-xl border border-slate-800 shadow-lg">
+          <h1 className="text-2xl font-bold text-purple-200 mb-6 text-center">
+            Sign In
+          </h1>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div>
-            <Input
-              type="email"
-              placeholder="Email"
-              className="h-12 border-slate-700 bg-slate-950/50 text-slate-100 placeholder:text-slate-600 focus:border-purple-500 focus:ring-purple-500/30"
-              {...register("email")}
-            />
-            {errors.email && (
-              <p className="text-red-400 text-sm mt-1">
-                {errors.email.message}
-              </p>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <div>
+              <Input
+                  type="email"
+                  placeholder="Email"
+                  className="h-12 border-slate-700 bg-slate-950/50 text-slate-100 placeholder:text-slate-600 focus:border-purple-500 focus:ring-purple-500/30"
+                  {...register("email")}
+              />
+              {errors.email && (
+                  <p className="text-red-400 text-sm mt-1">
+                    {errors.email.message}
+                  </p>
+              )}
+            </div>
+
+            <div>
+              <Input
+                  type="password"
+                  placeholder="Password"
+                  className="h-12 border-slate-700 bg-slate-950/50 text-slate-100 placeholder:text-slate-600 focus:border-purple-500 focus:ring-purple-500/30"
+                  {...register("password")}
+              />
+              {errors.password && (
+                  <p className="text-red-400 text-sm mt-1">
+                    {errors.password.message}
+                  </p>
+              )}
+            </div>
+
+            {error && (
+                <p className="text-red-400 text-sm text-center">
+                  {error}
+                </p>
             )}
-          </div>
 
-          <div>
-            <Input
-              type="password"
-              placeholder="Password"
-              className="h-12 border-slate-700 bg-slate-950/50 text-slate-100 placeholder:text-slate-600 focus:border-purple-500 focus:ring-purple-500/30"
-              {...register("password")}
-            />
-            {errors.password && (
-              <p className="text-red-400 text-sm mt-1">
-                {errors.password.message}
-              </p>
-            )}
-          </div>
+            <div className="text-right">
+              <a
+                  href="/forgot-password"
+                  className="text-sm text-purple-400 hover:text-purple-300 transition-colors"
+              >
+                Forgot password?
+              </a>
+            </div>
 
-          {error && (
-            <p className="text-red-400 text-sm text-center">
-              {error}
-            </p>
-          )}
-
-          <div className="text-right">
-            <a
-              href="/forgot-password"
-              className="text-sm text-purple-400 hover:text-purple-300 transition-colors"
+            <Button
+                type="submit"
+                className="w-full bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-500 hover:to-pink-400 text-white"
+                disabled={isSubmitting}
             >
-              Forgot password?
-            </a>
-          </div>
-
-          <Button
-            type="submit"
-            className="w-full bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-500 hover:to-pink-400 text-white"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? "Signing In..." : "Sign In"}
-          </Button>
-        </form>
+              {isSubmitting ? "Signing In..." : "Sign In"}
+            </Button>
+          </form>
+        </div>
       </div>
-    </div>
   );
 }

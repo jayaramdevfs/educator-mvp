@@ -10,11 +10,16 @@ vi.mock("next/link", () => ({
 
 vi.mock("next/navigation", () => ({
   notFound: vi.fn(),
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn(), back: vi.fn() }),
 }));
 
 vi.mock("@/components/layout", () => ({
   TopNav: () => <div data-testid="top-nav" />,
   PublicFooter: () => <div data-testid="public-footer" />,
+}));
+
+vi.mock("@tanstack/react-query", () => ({
+  useQueryClient: () => ({ invalidateQueries: vi.fn() }),
 }));
 
 describe("public course detail page", () => {

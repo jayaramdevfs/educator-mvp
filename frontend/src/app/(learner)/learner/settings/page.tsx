@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { useAuthUser } from "@/store/auth-store";
+import { useAuthStore } from "@/store/auth-store";
 import { apiPut } from "@/lib/api/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,7 +9,7 @@ import { User, Lock, Mail, Loader2, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 
 export default function SettingsPage() {
-  const user = useAuthUser();
+  const user = useAuthStore((state) => state.user);
 
   const [name, setName] = useState(user?.email?.split("@")[0] ?? "");
   const [currentPassword, setCurrentPassword] = useState("");

@@ -33,7 +33,7 @@ class CourseRepositoryDataJpaTest {
         saveCourse(node, "Archived Course", "Should not appear", CourseDifficulty.BEGINNER, CourseStatus.PUBLISHED, true, false);
         saveCourse(node, "Draft Course", "Should not appear", CourseDifficulty.BEGINNER, CourseStatus.DRAFT, false, false);
 
-        Page<Course> result = courseRepository.searchPublicCourses(
+        Page<Course> result = courseRepository.searchPublicCoursesWithQuery(
                 "history",
                 CourseDifficulty.BEGINNER,
                 CourseStatus.PUBLISHED,
@@ -42,6 +42,25 @@ class CourseRepositoryDataJpaTest {
 
         assertThat(result.getContent()).hasSize(1);
         assertThat(result.getContent().get(0).getTitleEn()).isEqualTo("Ancient History");
+    }
+
+    @Test
+    void searchPublicCoursesWithoutQuery_filtersWithoutTextSearch() {
+        HierarchyNode node = saveNode("math");
+
+        saveCourse(node, "Algebra Basics", "Intro to algebra", CourseDifficulty.BEGINNER, CourseStatus.PUBLISHED, false, false);
+        saveCourse(node, "Calculus 101", "Derivatives", CourseDifficulty.ADVANCED, CourseStatus.PUBLISHED, false, false);
+        saveCourse(node, "Deleted Math", "Gone", CourseDifficulty.BEGINNER, CourseStatus.PUBLISHED, false, true);
+        saveCourse(node, "Archived Math", "Old", CourseDifficulty.BEGINNER, CourseStatus.PUBLISHED, true, false);
+
+        Page<Course> result = courseRepository.searchPublicCoursesWithoutQuery(
+                CourseDifficulty.BEGINNER,
+                CourseStatus.PUBLISHED,
+                PageRequest.of(0, 20)
+        );
+
+        assertThat(result.getContent()).hasSize(1);
+        assertThat(result.getContent().get(0).getTitleEn()).isEqualTo("Algebra Basics");
     }
 
     @Test

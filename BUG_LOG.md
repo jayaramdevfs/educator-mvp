@@ -62,11 +62,18 @@
 - **Fix:** Changed to `"/learner/dashboard"`.
 - **Status:** RESOLVED
 
+### BUG-009: "Start Learning" button crashes course page
+- **Severity:** High
+- **Found:** Sprint 10 stabilization
+- **Root Cause:** Course page fetched lessons expecting an array `LessonNode[]`, but backend `lesson-public-controller` returns `PaginatedResponse<Lesson>` (object wrapper). The frontend logic crashed trying to `.filter()` on an object.
+- **Fix:** Updated `useQuery` to parse `{ content: LessonNode[] }` and added `?page=0&size=100` to ensure full lesson tree is loaded.
+- **Status:** RESOLVED
+
 ---
 
 ## Summary
 
 | Sprint | Bugs Found | Bugs Resolved | Open |
 |---|---|---|---|
-| Sprint 10 | 8 | 8 | 0 |
-| **Total** | **8** | **8** | **0** |
+| Sprint 10 | 9 | 9 | 0 |
+| **Total** | **9** | **9** | **0** |

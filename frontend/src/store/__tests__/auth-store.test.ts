@@ -1,39 +1,74 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { clearAccessToken } from "@/lib/api/token-storage";
 import { useAuthStore } from "@/store/auth-store";
 
 describe("auth store", () => {
   beforeEach(() => {
-    clearAccessToken();
     useAuthStore.setState({
-      status: "anonymous",
       token: null,
       user: null,
-      hydrated: false,
       isAuthenticated: false,
     });
   });
 
-  it("hydrates anonymous state when no token is present", () => {
-    useAuthStore.getState().hydrate();
+  it("starts with anonymous state", () => {
     const state = useAuthStore.getState();
-    expect(state.hydrated).toBe(true);
     expect(state.isAuthenticated).toBe(false);
     expect(state.user).toBeNull();
+    expect(state.token).toBeNull();
   });
 
-  it("logs in and maps user from token claims", async () => {
-    await useAuthStore.getState().login({
+  it("login sets token, user, and isAuthenticated", () => {
+    useAuthStore.getState().login("test-token", {
+      id: 1,
       email: "tester@educator.local",
-      password: "TestPass123!",
+      roles: ["STUDENT"],
     });
 
     const state = useAuthStore.getState();
-    expect(state.status).toBe("authenticated");
     expect(state.isAuthenticated).toBe(true);
-    expect(state.token).toBeTruthy();
+    expect(state.token).toBe("test-token");
     expect(state.user?.email).toBe("tester@educator.local");
-    expect(state.user?.roles).toEqual(["ADMIN"]);
+    expect(state.user?.roles).toEqual(["STUDENT"]);
+  });
+
+  it("logout clears all auth state", () => {
+    useAuthStore.getState().login("test-token", {
+      id: 1,
+      email: "tester@educator.local",
+      roles: ["ADMIN"],
+    });
+
+    useAuthStore.getState().logout();
+
+    const state = useAuthStore.getState();
+    expect(state.isAuthenticated).toBe(false);
+    expect(state.token).toBeNull();
+    expect(state.user).toBeNull();
+  });
+
+  it("setToken updates only the token", () => {
+    useAuthStore.getState().login("old-token", {
+      id: 1,
+      email: "tester@educator.local",
+      roles: ["STUDENT"],
+    });
+
+    useAuthStore.getState().setToken("new-token");
+
+    const state = useAuthStore.getState();
+    expect(state.token).toBe("new-token");
+    expect(state.user?.email).toBe("tester@educator.local");
+  });
+
+  it("setUser updates user and sets isAuthenticated", () => {
+    useAuthStore.getState().setUser({
+      id: 2,
+      email: "admin@educator.local",
+      roles: ["ADMIN"],
+    });
+
+    const state = useAuthStore.getState();
+    expect(state.isAuthenticated).toBe(true);
+    expect(state.user?.email).toBe("admin@educator.local");
   });
 });
-

@@ -15,7 +15,7 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
     // Existing non-paginated method (kept for backward compatibility)
     List<Course> findByIsDeletedFalse();
 
-    // NEW — Paginated version
+    // Paginated version
     Page<Course> findByIsDeletedFalse(Pageable pageable);
 
     Optional<Course> findByIdAndIsDeletedFalse(Long id);
@@ -31,17 +31,38 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
 
     long countByIsDeletedFalse();
 
+    /**
+     * SEARCH WITH TEXT (q MUST NOT BE NULL)
+     */
     @Query("""
-            select c from Course c
-            where c.isDeleted = false
-              and c.isArchived = false
-              and (:q is null or lower(c.titleEn) like lower(concat('%', :q, '%'))
-                or lower(c.descriptionEn) like lower(concat('%', :q, '%')))
-              and (:difficulty is null or c.difficulty = :difficulty)
-              and (:status is null or c.status = :status)
-            """)
-    Page<Course> searchPublicCourses(
+        select c from Course c
+        where c.isDeleted = false
+          and c.isArchived = false
+          and (
+                lower(c.titleEn) like lower(concat('%', :q, '%'))
+                or lower(c.descriptionEn) like lower(concat('%', :q, '%'))
+          )
+          and (:difficulty is null or c.difficulty = :difficulty)
+          and (:status is null or c.status = :status)
+        """)
+    Page<Course> searchPublicCoursesWithQuery(
             @Param("q") String q,
+            @Param("difficulty") CourseDifficulty difficulty,
+            @Param("status") CourseStatus status,
+            Pageable pageable
+    );
+
+    /**
+     * SEARCH WITHOUT TEXT
+     */
+    @Query("""
+        select c from Course c
+        where c.isDeleted = false
+          and c.isArchived = false
+          and (:difficulty is null or c.difficulty = :difficulty)
+          and (:status is null or c.status = :status)
+        """)
+    Page<Course> searchPublicCoursesWithoutQuery(
             @Param("difficulty") CourseDifficulty difficulty,
             @Param("status") CourseStatus status,
             Pageable pageable

@@ -45,8 +45,7 @@ export function LoginForm({
     },
   });
 
-  const handleSubmit = form.handleSubmit(async (values) => {
-    console.log("Login values:", values);
+  const handleSubmit = form.handleSubmit(async () => {
     await onLoginClick();
   });
 

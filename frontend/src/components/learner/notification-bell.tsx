@@ -4,7 +4,8 @@ import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { apiGet, apiPut } from "@/lib/api/client";
-import { Bell, CheckCircle2, XCircle, Trophy, Award, MailOpen } from "lucide-react";
+import { useAuthStore } from "@/store/auth-store";
+import { Bell, CheckCircle2, XCircle, Trophy, Award } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 
 interface Notification {
@@ -30,11 +31,14 @@ const typeIcon: Record<string, React.ReactNode> = {
 export function NotificationBell() {
   const [isOpen, setIsOpen] = useState(false);
   const queryClient = useQueryClient();
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
   const { data: unreadData } = useQuery({
     queryKey: ["unread-count"],
     queryFn: () => apiGet<{ unreadCount: number }>("/api/learner/notifications/unread-count"),
     refetchInterval: 30_000,
+    enabled: isAuthenticated,
+    retry: false,
   });
 
   const { data: notifData } = useQuery({

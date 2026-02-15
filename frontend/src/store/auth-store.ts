@@ -1,111 +1,66 @@
 import { create } from "zustand";
-import { apiPost } from "@/lib/api";
-import { clearAccessToken, getAccessToken, setAccessToken } from "@/lib/api/token-storage";
-import { mapTokenToAuthUser, type AuthUser } from "@/lib/auth/jwt";
-import type { LoginRequest, LoginResponse } from "@/types";
+import { persist } from "zustand/middleware";
+import {
+  setAccessToken,
+  clearAccessToken,
+} from "@/lib/api/token-storage";
 
-export type AuthStatus = "anonymous" | "loading" | "authenticated";
+interface User {
+  id: number;
+  email: string;
+  roles: string[];
+}
 
-export interface AuthState {
-  status: AuthStatus;
+interface AuthState {
   token: string | null;
-  user: AuthUser | null;
-  hydrated: boolean;
+  user: User | null;
   isAuthenticated: boolean;
-  login: (credentials: LoginRequest) => Promise<void>;
+
+  login: (token: string, user: User) => void;
   logout: () => void;
-  hydrate: () => void;
-  setToken: (token: string | null) => void;
+  setUser: (user: User) => void;
+  setToken: (token: string) => void;
 }
 
-function deriveUser(token: string | null): AuthUser | null {
-  if (!token) {
-    return null;
-  }
-  return mapTokenToAuthUser(token);
-}
+export const useAuthStore = create<AuthState>()(
+    persist(
+        (set) => ({
+          token: null,
+          user: null,
+          isAuthenticated: false,
 
-export const useAuthStore = create<AuthState>((set) => ({
-  status: "anonymous",
-  token: null,
-  user: null,
-  hydrated: false,
-  isAuthenticated: false,
+          login: (token, user) => {
+            setAccessToken(token);
+            set({
+              token,
+              user,
+              isAuthenticated: true,
+            });
+          },
 
-  setToken: (token) => {
-    if (token) {
-      setAccessToken(token);
-    } else {
-      clearAccessToken();
-    }
+          logout: () => {
+            clearAccessToken();
+            set({
+              token: null,
+              user: null,
+              isAuthenticated: false,
+            });
+          },
 
-    const user = deriveUser(token);
-    set({
-      token,
-      user,
-      isAuthenticated: Boolean(token),
-      status: token ? "authenticated" : "anonymous",
-    });
-  },
+          setUser: (user) => {
+            set({
+              user,
+              isAuthenticated: true,
+            });
+          },
 
-  hydrate: () => {
-    const token = getAccessToken();
-    const user = deriveUser(token);
-    set({
-      token,
-      user,
-      hydrated: true,
-      isAuthenticated: Boolean(token),
-      status: token ? "authenticated" : "anonymous",
-    });
-  },
-
-  login: async (credentials) => {
-    set({ status: "loading" });
-    try {
-      const response = await apiPost<LoginResponse, LoginRequest>("/api/auth/login", credentials);
-      const token = response.token;
-      const user = deriveUser(token);
-      setAccessToken(token);
-      set({
-        token,
-        user,
-        isAuthenticated: true,
-        status: "authenticated",
-        hydrated: true,
-      });
-    } catch (error) {
-      set({
-        status: "anonymous",
-        token: null,
-        user: null,
-        isAuthenticated: false,
-      });
-      throw error;
-    }
-  },
-
-  logout: () => {
-    clearAccessToken();
-    set({
-      status: "anonymous",
-      token: null,
-      user: null,
-      isAuthenticated: false,
-      hydrated: true,
-    });
-  },
-}));
-
-export const useAuthStatus = () => useAuthStore((state) => state.status);
-export const useAuthUser = () => useAuthStore((state) => state.user);
-export const useIsAuthenticated = () => useAuthStore((state) => state.isAuthenticated);
-export const useAuthHydrated = () => useAuthStore((state) => state.hydrated);
-export const useAuthActions = () =>
-  useAuthStore((state) => ({
-    login: state.login,
-    logout: state.logout,
-    hydrate: state.hydrate,
-    setToken: state.setToken,
-  }));
-
+          setToken: (token) => {
+            setAccessToken(token);
+            set({ token });
+          },
+        }),
+        {
+          name: "educator-auth",
+        }
+    )
+);

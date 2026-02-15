@@ -3,7 +3,6 @@ package com.educator.course.service;
 import com.educator.course.*;
 import com.educator.course.lesson.Lesson;
 import com.educator.course.lesson.service.LessonService;
-import com.educator.course.CourseRepository;
 import com.educator.hierarchy.HierarchyNode;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -19,7 +18,8 @@ public class CourseService {
     private final CourseRepository courseRepository;
     private final LessonService lessonService;
 
-    public CourseService(CourseRepository courseRepository, LessonService lessonService) {
+    public CourseService(CourseRepository courseRepository,
+                         LessonService lessonService) {
         this.courseRepository = courseRepository;
         this.lessonService = lessonService;
     }
@@ -82,16 +82,17 @@ public class CourseService {
     }
 
     /**
-     * Public listing
+     * Public listing by hierarchy
      */
     @Transactional(readOnly = true)
     public List<Course> getPublishedCoursesByHierarchy(
             HierarchyNode hierarchyNode
     ) {
-        return courseRepository.findByHierarchyNodeAndStatusAndIsArchivedFalseAndIsDeletedFalseOrderBySortOrderAsc(
-                hierarchyNode,
-                CourseStatus.PUBLISHED
-        );
+        return courseRepository
+                .findByHierarchyNodeAndStatusAndIsArchivedFalseAndIsDeletedFalseOrderBySortOrderAsc(
+                        hierarchyNode,
+                        CourseStatus.PUBLISHED
+                );
     }
 
     /**
@@ -107,6 +108,9 @@ public class CourseService {
         return courseRepository.findByIsDeletedFalse(pageable);
     }
 
+    /**
+     * Public search listing (SAFE FIX — no null inside JPQL)
+     */
     @Transactional(readOnly = true)
     public Page<Course> searchPublicCourses(
             String q,
@@ -114,7 +118,22 @@ public class CourseService {
             CourseStatus status,
             Pageable pageable
     ) {
-        return courseRepository.searchPublicCourses(q, difficulty, status, pageable);
+        String normalizedQ = (q == null || q.isBlank()) ? null : q;
+
+        if (normalizedQ == null) {
+            return courseRepository.searchPublicCoursesWithoutQuery(
+                    difficulty,
+                    status,
+                    pageable
+            );
+        }
+
+        return courseRepository.searchPublicCoursesWithQuery(
+                normalizedQ,
+                difficulty,
+                status,
+                pageable
+        );
     }
 
     @Transactional(readOnly = true)

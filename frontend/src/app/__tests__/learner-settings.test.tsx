@@ -7,12 +7,19 @@ vi.mock("next/navigation", () => ({
   usePathname: () => "/learner/settings",
 }));
 
+const mockAuthState = {
+  isAuthenticated: true,
+  user: { id: 1, email: "student@test.com", roles: ["STUDENT"] },
+  token: "mock-token",
+  login: vi.fn(),
+  logout: vi.fn(),
+  setUser: vi.fn(),
+  setToken: vi.fn(),
+};
+
 vi.mock("@/store/auth-store", () => ({
-  useAuthStore: () => ({
-    isAuthenticated: true,
-    user: { email: "student@test.com", roles: ["STUDENT"] },
-  }),
-  useAuthUser: () => ({ email: "student@test.com", roles: ["STUDENT"] }),
+  useAuthStore: (selector?: (state: typeof mockAuthState) => unknown) =>
+    selector ? selector(mockAuthState) : mockAuthState,
 }));
 
 describe("Settings Page (F3.11)", () => {
