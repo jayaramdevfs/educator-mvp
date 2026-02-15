@@ -12,59 +12,61 @@ import java.util.Optional;
 
 public interface CourseRepository extends JpaRepository<Course, Long> {
 
-    // Existing non-paginated method (kept for backward compatibility)
-    List<Course> findByIsDeletedFalse();
+  // Existing non-paginated method (kept for backward compatibility)
+  List<Course> findByIsDeletedFalse();
 
-    // Paginated version
-    Page<Course> findByIsDeletedFalse(Pageable pageable);
+  // Paginated version
+  Page<Course> findByIsDeletedFalse(Pageable pageable);
 
-    Optional<Course> findByIdAndIsDeletedFalse(Long id);
+  Optional<Course> findByIdAndIsDeletedFalse(Long id);
 
-    List<Course> findByStatusAndIsDeletedFalse(CourseStatus status);
+  List<Course> findByStatusAndIsDeletedFalse(CourseStatus status);
 
-    List<Course> findByHierarchyNodeAndStatusAndIsArchivedFalseAndIsDeletedFalseOrderBySortOrderAsc(
-            HierarchyNode hierarchyNode,
-            CourseStatus status
-    );
+  // Safe methods for public access (Strictly PUBLISHED, Not Deleted)
+  List<Course> findAllByStatusAndIsDeletedFalse(CourseStatus status);
 
-    List<Course> findByIsDeletedFalseOrderByCreatedAtDesc();
+  Optional<Course> findByIdAndStatusAndIsDeletedFalse(Long id, CourseStatus status);
 
-    long countByIsDeletedFalse();
+  List<Course> findByHierarchyNodeAndStatusAndIsArchivedFalseAndIsDeletedFalseOrderBySortOrderAsc(
+      HierarchyNode hierarchyNode,
+      CourseStatus status);
 
-    /**
-     * SEARCH WITH TEXT (q MUST NOT BE NULL)
-     */
-    @Query("""
-        select c from Course c
-        where c.isDeleted = false
-          and c.isArchived = false
-          and (
-                lower(c.titleEn) like lower(concat('%', :q, '%'))
-                or lower(c.descriptionEn) like lower(concat('%', :q, '%'))
-          )
-          and (:difficulty is null or c.difficulty = :difficulty)
-          and (:status is null or c.status = :status)
-        """)
-    Page<Course> searchPublicCoursesWithQuery(
-            @Param("q") String q,
-            @Param("difficulty") CourseDifficulty difficulty,
-            @Param("status") CourseStatus status,
-            Pageable pageable
-    );
+  List<Course> findByIsDeletedFalseOrderByCreatedAtDesc();
 
-    /**
-     * SEARCH WITHOUT TEXT
-     */
-    @Query("""
-        select c from Course c
-        where c.isDeleted = false
-          and c.isArchived = false
-          and (:difficulty is null or c.difficulty = :difficulty)
-          and (:status is null or c.status = :status)
-        """)
-    Page<Course> searchPublicCoursesWithoutQuery(
-            @Param("difficulty") CourseDifficulty difficulty,
-            @Param("status") CourseStatus status,
-            Pageable pageable
-    );
+  long countByIsDeletedFalse();
+
+  /**
+   * SEARCH WITH TEXT (q MUST NOT BE NULL)
+   */
+  @Query("""
+      select c from Course c
+      where c.isDeleted = false
+        and c.isArchived = false
+        and (
+              lower(c.titleEn) like lower(concat('%', :q, '%'))
+              or lower(c.descriptionEn) like lower(concat('%', :q, '%'))
+        )
+        and (:difficulty is null or c.difficulty = :difficulty)
+        and (:status is null or c.status = :status)
+      """)
+  Page<Course> searchPublicCoursesWithQuery(
+      @Param("q") String q,
+      @Param("difficulty") CourseDifficulty difficulty,
+      @Param("status") CourseStatus status,
+      Pageable pageable);
+
+  /**
+   * SEARCH WITHOUT TEXT
+   */
+  @Query("""
+      select c from Course c
+      where c.isDeleted = false
+        and c.isArchived = false
+        and (:difficulty is null or c.difficulty = :difficulty)
+        and (:status is null or c.status = :status)
+      """)
+  Page<Course> searchPublicCoursesWithoutQuery(
+      @Param("difficulty") CourseDifficulty difficulty,
+      @Param("status") CourseStatus status,
+      Pageable pageable);
 }

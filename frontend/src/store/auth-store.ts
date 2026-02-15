@@ -23,44 +23,45 @@ interface AuthState {
 }
 
 export const useAuthStore = create<AuthState>()(
-    persist(
-        (set) => ({
+  persist(
+    (set) => ({
+      token: null,
+      user: null,
+      isAuthenticated: false,
+
+      login: (token, user) => {
+        setAccessToken(token);
+        set({
+          token,
+          user,
+          isAuthenticated: true,
+        });
+      },
+
+      logout: () => {
+        clearAccessToken();
+        set({
           token: null,
           user: null,
           isAuthenticated: false,
+        });
+        window.location.href = "/";
+      },
 
-          login: (token, user) => {
-            setAccessToken(token);
-            set({
-              token,
-              user,
-              isAuthenticated: true,
-            });
-          },
+      setUser: (user) => {
+        set({
+          user,
+          isAuthenticated: true,
+        });
+      },
 
-          logout: () => {
-            clearAccessToken();
-            set({
-              token: null,
-              user: null,
-              isAuthenticated: false,
-            });
-          },
-
-          setUser: (user) => {
-            set({
-              user,
-              isAuthenticated: true,
-            });
-          },
-
-          setToken: (token) => {
-            setAccessToken(token);
-            set({ token });
-          },
-        }),
-        {
-          name: "educator-auth",
-        }
-    )
+      setToken: (token) => {
+        setAccessToken(token);
+        set({ token });
+      },
+    }),
+    {
+      name: "educator-auth",
+    }
+  )
 );

@@ -139,8 +139,6 @@ export default async function CatalogPage({
               >
                 <option value="">All statuses</option>
                 <option value="PUBLISHED">Published</option>
-                <option value="DRAFT">Draft</option>
-                <option value="ARCHIVED">Archived</option>
               </select>
               <button
                 type="submit"

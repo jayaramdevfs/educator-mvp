@@ -22,7 +22,7 @@ public class EnrollmentService {
     private final CourseRepository courseRepository;
 
     public EnrollmentService(EnrollmentRepository enrollmentRepository,
-                             CourseRepository courseRepository) {
+            CourseRepository courseRepository) {
         this.enrollmentRepository = enrollmentRepository;
         this.courseRepository = courseRepository;
     }
@@ -37,6 +37,10 @@ public class EnrollmentService {
 
         if (course.isDeleted()) {
             throw new IllegalStateException("Course is deleted");
+        }
+
+        if (course.isArchived()) {
+            throw new IllegalStateException("Course is archived");
         }
 
         if (course.getStatus() != CourseStatus.PUBLISHED) {
@@ -73,7 +77,11 @@ public class EnrollmentService {
 
     @Transactional(readOnly = true)
     public List<Enrollment> getMyEnrollments(User user) {
-        return enrollmentRepository.findAllByUser(user);
+        return enrollmentRepository.findAllByUser(user).stream()
+                .filter(e -> !e.getCourse().isDeleted() &&
+                        !e.getCourse().isArchived() &&
+                        e.getCourse().getStatus() == CourseStatus.PUBLISHED)
+                .collect(java.util.stream.Collectors.toList());
     }
 
     @Transactional(readOnly = true)
