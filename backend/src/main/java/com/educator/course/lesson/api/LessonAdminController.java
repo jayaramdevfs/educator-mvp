@@ -4,11 +4,13 @@ import com.educator.course.Course;
 import com.educator.course.CourseRepository;
 import com.educator.course.lesson.Lesson;
 import com.educator.course.lesson.LessonType;
+import com.educator.course.lesson.dto.UpdateLessonRequest;
 import com.educator.course.lesson.service.LessonService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
+import com.educator.course.lesson.dto.ReorderLessonRequest;
 
 @RestController
 @RequestMapping("/api/admin/lessons")
@@ -54,6 +56,18 @@ public class LessonAdminController {
     }
 
     /**
+     * B4.2 - Update Lesson
+     */
+    @PutMapping("/{lessonId}")
+    public ResponseEntity<Lesson> updateLesson(
+            @PathVariable Long lessonId,
+            @Valid @RequestBody UpdateLessonRequest request
+    ) {
+        Lesson updatedLesson = lessonService.updateLesson(lessonId, request);
+        return ResponseEntity.ok(updatedLesson);
+    }
+
+    /**
      * Soft delete lesson
      */
     @DeleteMapping("/{lessonId}")
@@ -63,4 +77,19 @@ public class LessonAdminController {
         lessonService.deleteLesson(lessonId);
         return ResponseEntity.noContent().build();
     }
+    /**
+     * B4.3 - Reorder Lesson
+     */
+    @PutMapping("/{lessonId}/reorder")
+    public ResponseEntity<Lesson> reorderLesson(
+            @PathVariable Long lessonId,
+            @Valid @RequestBody ReorderLessonRequest request
+    ) {
+        Lesson reordered = lessonService.reorderLesson(
+                lessonId,
+                request.getNewOrderIndex()
+        );
+        return ResponseEntity.ok(reordered);
+    }
+
 }

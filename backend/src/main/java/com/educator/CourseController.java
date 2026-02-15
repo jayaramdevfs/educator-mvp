@@ -2,11 +2,13 @@ package com.educator;
 
 import com.educator.course.Course;
 import com.educator.course.CourseDifficulty;
+import com.educator.course.dto.UpdateCourseRequest;
 import com.educator.course.service.CourseService;
 import com.educator.common.dto.PaginatedResponse;
 import com.educator.common.pagination.PageableFactory;
 import com.educator.hierarchy.HierarchyNode;
 import com.educator.hierarchy.HierarchyNodeRepository;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
@@ -38,10 +40,8 @@ public class CourseController {
             @RequestParam int estimatedDurationMinutes,
             @RequestParam String createdByRole
     ) {
-        // ✅ CORRECT WAY: fetch existing node from DB
-        HierarchyNode node = hierarchyNodeRepository
-                .findById(hierarchyNodeId)
-                .orElseThrow(() -> new RuntimeException("Hierarchy node not found"));
+        HierarchyNode node = hierarchyNodeRepository.findById(hierarchyNodeId)
+                .orElseThrow(() -> new IllegalArgumentException("Hierarchy node not found"));
 
         return courseService.createCourse(
                 node,
@@ -54,27 +54,23 @@ public class CourseController {
         );
     }
 
-    @PostMapping("/{id}/publish")
-    public void publish(@PathVariable Long id) {
-        courseService.publishCourse(id);
-    }
-
-    @PostMapping("/{id}/archive")
-    public void archive(@PathVariable Long id) {
-        courseService.archiveCourse(id);
-    }
-
-    @DeleteMapping("/{id}")
-    public void delete(@PathVariable Long id) {
-        courseService.deleteCourse(id);
-    }
-
-    @GetMapping("/active")
-    public PaginatedResponse<Course> getAllActiveCourses(
-            @RequestParam(required = false) Integer page,
-            @RequestParam(required = false) Integer size
+    // ✅ B4.1 UPDATE ENDPOINT
+    @PutMapping("/{id}")
+    public Course updateCourse(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateCourseRequest request
     ) {
-        Pageable pageable = PageableFactory.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-        return new PaginatedResponse<>(courseService.getAllActiveCourses(pageable));
+        HierarchyNode node = hierarchyNodeRepository.findById(request.getHierarchyNodeId())
+                .orElseThrow(() -> new IllegalArgumentException("Hierarchy node not found"));
+
+        return courseService.updateCourse(
+                id,
+                node,
+                request.getTitleEn(),
+                request.getDescriptionEn(),
+                request.getDifficulty(),
+                request.getLanguageCode(),
+                request.getEstimatedDurationMinutes()
+        );
     }
 }

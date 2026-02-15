@@ -4,6 +4,7 @@ import com.educator.course.Course;
 import com.educator.course.lesson.Lesson;
 import com.educator.course.lesson.LessonRepository;
 import com.educator.course.lesson.LessonType;
+import com.educator.course.lesson.dto.UpdateLessonRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -21,13 +22,27 @@ public class LessonService {
         this.lessonRepository = lessonRepository;
     }
 
-    /* -------------------------------------------------
-       CREATE LESSON (ROOT)
-     ------------------------------------------------- */
-    /**
-     * Backward-compatible method for Sprint 3.x controllers
-     * Creates ROOT-level lesson
-     */
+    // -------------------------------------------------
+    // QUERY ROOT LESSONS FOR COURSE
+    // -------------------------------------------------
+    @Transactional(readOnly = true)
+    public Page<Lesson> getLessonsForCourse(Course course, Pageable pageable) {
+        return lessonRepository
+                .findByCourseAndParentLessonIsNullAndIsDeletedFalse(course, pageable);
+    }
+
+    // -------------------------------------------------
+    // QUERY CHILD LESSONS (For tree)
+    // -------------------------------------------------
+    @Transactional(readOnly = true)
+    public List<Lesson> getChildLessons(Lesson parentLesson) {
+        return lessonRepository
+                .findByParentLessonAndIsDeletedFalseOrderByOrderIndexAsc(parentLesson);
+    }
+
+    // -------------------------------------------------
+    // ADD LESSON
+    // -------------------------------------------------
     public Lesson addLesson(
             Course course,
             LessonType type,
@@ -36,160 +51,142 @@ public class LessonService {
             String videoUrl,
             String documentUrl
     ) {
-        return addRootLesson(
-                course,
-                type,
-                orderIndex,
-                textContent,
-                videoUrl,
-                documentUrl
-        );
-    }
 
-    public Lesson addRootLesson(
-            Course course,
-            LessonType type,
-            int orderIndex,
-            String textContent,
-            String videoUrl,
-            String documentUrl
-    ) {
         Lesson lesson = new Lesson();
         lesson.setCourse(course);
-        lesson.setParentLesson(null);
+        lesson.setType(type);
+        lesson.setOrderIndex(orderIndex);
         lesson.setDepthLevel(0);
-        lesson.setOrderIndex(orderIndex);
-        lesson.setType(type);
-        lesson.setTextContent(textContent);
-        lesson.setVideoUrl(videoUrl);
-        lesson.setDocumentUrl(documentUrl);
-        lesson.setDeleted(false);
+        lesson.setPath("/course/" + course.getId() + "/lesson/temp");
 
-        // Temporary path, finalized after save
-        lesson.setPath("/course/" + course.getId());
-
-        lesson = lessonRepository.save(lesson);
-
-        // Final path includes lesson ID
-        lesson.setPath(lesson.getPath() + "/lesson/" + lesson.getId());
-        return lessonRepository.save(lesson);
-    }
-
-    /* -------------------------------------------------
-       CREATE LESSON (CHILD)
-     ------------------------------------------------- */
-
-    public Lesson addChildLesson(
-            Lesson parentLesson,
-            LessonType type,
-            int orderIndex,
-            String textContent,
-            String videoUrl,
-            String documentUrl
-    ) {
-        if (parentLesson.isDeleted()) {
-            throw new IllegalStateException("Cannot add child to deleted lesson");
+        if (type == LessonType.TEXT) {
+            lesson.setTextContent(textContent);
+        } else if (type == LessonType.VIDEO) {
+            lesson.setVideoUrl(videoUrl);
+        } else if (type == LessonType.DOCUMENT) {
+            lesson.setDocumentUrl(documentUrl);
         }
 
-        Lesson lesson = new Lesson();
-        lesson.setCourse(parentLesson.getCourse());
-        lesson.setParentLesson(parentLesson);
-        lesson.setDepthLevel(parentLesson.getDepthLevel() + 1);
-        lesson.setOrderIndex(orderIndex);
-        lesson.setType(type);
-        lesson.setTextContent(textContent);
-        lesson.setVideoUrl(videoUrl);
-        lesson.setDocumentUrl(documentUrl);
-        lesson.setDeleted(false);
+        Lesson saved = lessonRepository.save(lesson);
 
-        lesson.setPath(parentLesson.getPath());
+        saved.setPath("/course/" + course.getId() + "/lesson/" + saved.getId());
 
-        lesson = lessonRepository.save(lesson);
-
-        lesson.setPath(parentLesson.getPath() + "/lesson/" + lesson.getId());
-        return lessonRepository.save(lesson);
+        return lessonRepository.save(saved);
     }
 
-    /* -------------------------------------------------
-       READ OPERATIONS
-     ------------------------------------------------- */
-
-    @Transactional(readOnly = true)
-    public List<Lesson> getRootLessons(Course course) {
-        return lessonRepository
-                .findByCourseAndParentLessonIsNullAndIsDeletedFalseOrderByOrderIndexAsc(course);
-    }
-
-    @Transactional(readOnly = true)
-    public List<Lesson> getChildLessons(Lesson parentLesson) {
-        return lessonRepository
-                .findByParentLessonAndIsDeletedFalseOrderByOrderIndexAsc(parentLesson);
-    }
-
-    @Transactional(readOnly = true)
-    public List<Lesson> getAllLessonsFlat(Course course) {
-        return lessonRepository.findAllByCourseFlatOrdered(course);
-    }
-    /**
-     * Backward-compatible method for Sprint 3.x controllers
-     * Returns ROOT lessons only
-     */
-    @Transactional(readOnly = true)
-    public List<Lesson> getLessonsForCourse(Course course) {
-        return lessonRepository
-                .findByCourseAndParentLessonIsNullAndIsDeletedFalseOrderByOrderIndexAsc(course);
-    }
-
-    @Transactional(readOnly = true)
-    public Page<Lesson> getLessonsForCourse(Course course, Pageable pageable) {
-        return lessonRepository.findByCourseAndParentLessonIsNullAndIsDeletedFalse(course, pageable);
-    }
-
-    /* -------------------------------------------------
-       SAFE REPARENTING
-     ------------------------------------------------- */
-
-    public Lesson moveLesson(Lesson lesson, Lesson newParent) {
-        if (lesson.getId().equals(newParent.getId())) {
-            throw new IllegalArgumentException("Lesson cannot be parent of itself");
-        }
-
-        // Prevent circular hierarchy
-        if (newParent.getPath().startsWith(lesson.getPath())) {
-            throw new IllegalStateException("Circular hierarchy detected");
-        }
-
-        lesson.setParentLesson(newParent);
-        lesson.setDepthLevel(newParent.getDepthLevel() + 1);
-        lesson.setPath(newParent.getPath() + "/lesson/" + lesson.getId());
-
-        return lessonRepository.save(lesson);
-    }
-
-    /* -------------------------------------------------
-       SAFE DELETE (SOFT CASCADE)
-     ------------------------------------------------- */
-
-    public void deleteLessonCascade(Lesson lesson) {
-        lesson.setDeleted(true);
-        lessonRepository.save(lesson);
-
-        List<Lesson> children =
-                lessonRepository.findByParentLessonAndIsDeletedFalseOrderByOrderIndexAsc(lesson);
-
-        for (Lesson child : children) {
-            deleteLessonCascade(child);
-        }
-    }
-    /**
-     * Backward-compatible delete method for Sprint 3.x controllers
-     * Delegates to soft cascade delete
-     */
+    // -------------------------------------------------
+    // DELETE LESSON (Soft delete)
+    // -------------------------------------------------
     public void deleteLesson(Long lessonId) {
+
         Lesson lesson = lessonRepository.findById(lessonId)
                 .orElseThrow(() -> new IllegalArgumentException("Lesson not found"));
 
-        deleteLessonCascade(lesson);
+        if (lessonRepository.existsByParentLessonAndIsDeletedFalse(lesson)) {
+            throw new IllegalStateException("Cannot delete lesson with children");
+        }
+
+        lesson.setDeleted(true);
+        lessonRepository.save(lesson);
     }
 
+    // -------------------------------------------------
+    // B4.2 UPDATE LESSON
+    // -------------------------------------------------
+    public Lesson updateLesson(Long lessonId, UpdateLessonRequest request) {
+
+        Lesson lesson = lessonRepository.findById(lessonId)
+                .orElseThrow(() -> new IllegalArgumentException("Lesson not found"));
+
+        if (lesson.isDeleted()) {
+            throw new IllegalStateException("Cannot update deleted lesson");
+        }
+
+        lesson.setType(request.getType());
+
+        lesson.setTextContent(null);
+        lesson.setVideoUrl(null);
+        lesson.setDocumentUrl(null);
+
+        if (request.getType() == LessonType.TEXT) {
+            lesson.setTextContent(request.getTextContent());
+        } else if (request.getType() == LessonType.VIDEO) {
+            lesson.setVideoUrl(request.getVideoUrl());
+        } else if (request.getType() == LessonType.DOCUMENT) {
+            lesson.setDocumentUrl(request.getDocumentUrl());
+        }
+
+        if (request.getOrderIndex() != null) {
+            lesson.setOrderIndex(request.getOrderIndex());
+        }
+
+        if (request.getParentLessonId() != null) {
+            Lesson newParent = lessonRepository.findById(request.getParentLessonId())
+                    .orElseThrow(() -> new IllegalArgumentException("Parent lesson not found"));
+
+            lesson.setParentLesson(newParent);
+            lesson.setDepthLevel(newParent.getDepthLevel() + 1);
+            lesson.setPath(newParent.getPath() + "/lesson/" + lesson.getId());
+        }
+
+        return lessonRepository.save(lesson);
+    }
+
+    // -------------------------------------------------
+    // B4.3 REORDER LESSON
+    // -------------------------------------------------
+    public Lesson reorderLesson(Long lessonId, int newOrderIndex) {
+
+        Lesson lesson = lessonRepository.findById(lessonId)
+                .orElseThrow(() -> new IllegalArgumentException("Lesson not found"));
+
+        if (lesson.isDeleted()) {
+            throw new IllegalStateException("Cannot reorder deleted lesson");
+        }
+
+        Lesson parent = lesson.getParentLesson();
+
+        List<Lesson> siblings;
+
+        if (parent == null) {
+            siblings = lessonRepository
+                    .findByCourseAndParentLessonIsNullAndIsDeletedFalseOrderByOrderIndexAsc(
+                            lesson.getCourse()
+                    );
+        } else {
+            siblings = lessonRepository
+                    .findByParentLessonAndIsDeletedFalseOrderByOrderIndexAsc(parent);
+        }
+
+        int currentIndex = lesson.getOrderIndex();
+
+        if (newOrderIndex == currentIndex) {
+            return lesson;
+        }
+
+        for (Lesson sibling : siblings) {
+
+            if (sibling.getId().equals(lesson.getId())) {
+                continue;
+            }
+
+            int siblingIndex = sibling.getOrderIndex();
+
+            if (newOrderIndex > currentIndex) {
+                if (siblingIndex > currentIndex && siblingIndex <= newOrderIndex) {
+                    sibling.setOrderIndex(siblingIndex - 1);
+                    lessonRepository.save(sibling);
+                }
+            } else {
+                if (siblingIndex >= newOrderIndex && siblingIndex < currentIndex) {
+                    sibling.setOrderIndex(siblingIndex + 1);
+                    lessonRepository.save(sibling);
+                }
+            }
+        }
+
+        lesson.setOrderIndex(newOrderIndex);
+
+        return lessonRepository.save(lesson);
+    }
 }

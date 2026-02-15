@@ -1,0 +1,25 @@
+Docker commands
+
+docker ps
+
+docker exec -it educator-postgres psql -U educator -d educator   ------->>>> **TO ENTER THE CONTAINER
+
+SELECT id, title_en, status FROM courses WHERE status = 'PUBLISHED';------>>>> **TO SEE PUBLISHED COURSES
+
+ id |         title_en         |  status
+----+--------------------------+-----------
+  1 | SuiteCourse-1770848300   | PUBLISHED
+  3 | SuiteCourse1770848636058 | PUBLISHED
+  4 | SuiteCourse1770848653082 | PUBLISHED
+ 16 | SuiteCourse1770860112903 | PUBLISHED
+  5 | SuiteCourse1770848672508 | PUBLISHED
+  6 | SuiteCourse1770849020187 | PUBLISHED
+ 11 | SuiteCourse1770850338226 | PUBLISHED
+ 12 | SuiteCourse1770851579822 | PUBLISHED
+ 17 | SuiteCourse1770860249520 | PUBLISHED
+ 13 | SuiteCourse1770854953830 | PUBLISHED
+ 14 | SuiteCourse1770858439536 | PUBLISHED
+ 15 | SuiteCourse1770858458635 | PUBLISHED
+(12 rows)
+
+educator=#
