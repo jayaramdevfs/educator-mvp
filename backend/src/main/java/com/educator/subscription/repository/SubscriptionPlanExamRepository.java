@@ -9,4 +9,8 @@ import java.util.UUID;
 public interface SubscriptionPlanExamRepository extends JpaRepository<SubscriptionPlanExam, UUID> {
 
     List<SubscriptionPlanExam> findByPlanId(UUID planId);
+
+    boolean existsByPlanIdAndExamId(UUID planId, UUID examId);
+
+    void deleteByPlanIdAndExamId(UUID planId, UUID examId);
 }
