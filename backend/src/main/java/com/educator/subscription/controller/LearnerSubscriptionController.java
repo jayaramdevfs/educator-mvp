@@ -1,7 +1,8 @@
 package com.educator.subscription.controller;
 
+import com.educator.payment.provider.PaymentInitiationResponse;
+import com.educator.payment.service.PaymentService;
 import com.educator.security.CustomUserDetails;
-import com.educator.subscription.service.SubscriptionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -13,13 +14,14 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class LearnerSubscriptionController {
 
-    private final SubscriptionService subscriptionService;
+    private final PaymentService paymentService;
 
     @PostMapping("/{planId}/buy")
-    public void buySubscription(@PathVariable UUID planId,
-                                @AuthenticationPrincipal CustomUserDetails userDetails) {
-
-        subscriptionService.purchaseSubscription(
+    public PaymentInitiationResponse initiatePurchase(
+            @PathVariable UUID planId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        return paymentService.initiatePayment(
                 userDetails.getUser().getId(),
                 planId
         );

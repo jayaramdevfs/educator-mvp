@@ -4,8 +4,13 @@ import com.educator.course.Course;
 import com.educator.course.CourseRepository;
 import com.educator.enrollment.entity.Enrollment;
 import com.educator.enrollment.repository.EnrollmentRepository;
-import com.educator.subscription.entity.*;
-import com.educator.subscription.repository.*;
+import com.educator.subscription.entity.SubscriptionPlan;
+import com.educator.subscription.entity.SubscriptionPlanCourse;
+import com.educator.subscription.entity.SubscriptionStatus;
+import com.educator.subscription.entity.UserSubscription;
+import com.educator.subscription.repository.SubscriptionPlanCourseRepository;
+import com.educator.subscription.repository.SubscriptionPlanRepository;
+import com.educator.subscription.repository.UserSubscriptionRepository;
 import com.educator.users.User;
 import com.educator.users.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -27,8 +32,11 @@ public class SubscriptionService {
     private final CourseRepository courseRepository;
     private final UserRepository userRepository;
 
+    /**
+     * Activates a subscription AFTER successful payment confirmation.
+     */
     @Transactional
-    public void purchaseSubscription(Long userId, UUID planId) {
+    public void activateSubscription(Long userId, UUID planId) {
 
         SubscriptionPlan plan = planRepository.findById(planId)
                 .orElseThrow(() -> new IllegalArgumentException("Plan not found"));
@@ -61,7 +69,8 @@ public class SubscriptionService {
 
         userSubscriptionRepository.save(subscription);
 
-        List<SubscriptionPlanCourse> courses = planCourseRepository.findByPlanId(planId);
+        List<SubscriptionPlanCourse> courses =
+                planCourseRepository.findByPlanId(planId);
 
         for (SubscriptionPlanCourse mapping : courses) {
 
