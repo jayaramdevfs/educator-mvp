@@ -1,5 +1,6 @@
 package com.educator.payment.service;
 
+import com.educator.payment.dto.PaymentHistoryResponse;
 import com.educator.payment.entity.SubscriptionPayment;
 import com.educator.payment.enums.PaymentStatus;
 import com.educator.payment.provider.PaymentInitiationResponse;
@@ -13,7 +14,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -75,11 +78,31 @@ public class PaymentService {
         payment.setCompletedAt(LocalDateTime.now());
         paymentRepository.save(payment);
 
-        // 🔐 Activate subscription only after successful payment
+        // Activate subscription only after successful payment
         subscriptionService.activateSubscription(
-
                 payment.getUserId(),
                 payment.getPlanId()
         );
+    }
+
+    @Transactional(readOnly = true)
+    public List<PaymentHistoryResponse> getPaymentHistory(Long userId) {
+
+        List<SubscriptionPayment> payments =
+                paymentRepository.findByUserIdOrderByCreatedAtDesc(userId);
+
+        return payments.stream()
+                .map(payment -> PaymentHistoryResponse.builder()
+                        .paymentId(payment.getId())
+                        .planId(payment.getPlanId())
+                        .amount(payment.getAmount())
+                        .status(payment.getStatus())
+                        .provider(payment.getProvider())
+                        .providerPaymentId(payment.getProviderPaymentId())
+                        .createdAt(payment.getCreatedAt())
+                        .completedAt(payment.getCompletedAt())
+                        .build()
+                )
+                .collect(Collectors.toList());
     }
 }

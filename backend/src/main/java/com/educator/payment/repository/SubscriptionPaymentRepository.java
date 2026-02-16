@@ -4,6 +4,7 @@ import com.educator.payment.entity.SubscriptionPayment;
 import com.educator.payment.enums.PaymentStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -17,4 +18,6 @@ public interface SubscriptionPaymentRepository
             UUID planId,
             PaymentStatus status
     );
+
+    List<SubscriptionPayment> findByUserIdOrderByCreatedAtDesc(Long userId);
 }
