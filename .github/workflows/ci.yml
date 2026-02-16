@@ -12,6 +12,21 @@ jobs:
     name: Backend + API Regression
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: educator
+          POSTGRES_USER: educator
+          POSTGRES_PASSWORD: educator
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U educator"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     defaults:
       run:
         working-directory: backend
@@ -27,19 +42,55 @@ jobs:
           java-version: "17"
           cache: maven
 
+      - name: Make mvnw executable
+        run: chmod +x mvnw
+
       - name: Run Unit Tests
-        run: bash mvnw -B test
+        run: ./mvnw -B test
 
       - name: Build Backend
-        run: bash mvnw -B package -DskipTests
+        run: ./mvnw -B package -DskipTests
+
+      - name: Identify JAR file
+        id: jar
+        run: |
+          JAR_FILE=$(ls target/educator-*.jar | grep -v original | head -1)
+          echo "jar_path=${JAR_FILE}" >> "$GITHUB_OUTPUT"
+          echo "Found JAR: ${JAR_FILE}"
 
       - name: Start Spring Boot App
+        env:
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_NAME: educator
+          DB_USERNAME: educator
+          DB_PASSWORD: educator
         run: |
-          nohup java -jar target/*.jar > app.log 2>&1 &
-          sleep 20
+          nohup java -jar "${{ steps.jar.outputs.jar_path }}" \
+            --server.port=8080 \
+            > app.log 2>&1 &
+          echo $! > app.pid
+          echo "Spring Boot PID: $(cat app.pid)"
 
-      - name: Verify App Running
-        run: curl --fail http://localhost:8080/actuator/health || exit 1
+      - name: Wait for Spring Boot readiness
+        run: |
+          echo "Waiting for Spring Boot to become ready..."
+          MAX_RETRIES=30
+          RETRY_INTERVAL=5
+          for i in $(seq 1 $MAX_RETRIES); do
+            if curl -sf http://localhost:8080/actuator/health > /dev/null 2>&1; then
+              echo "Spring Boot is ready! (attempt $i)"
+              curl -s http://localhost:8080/actuator/health | head -c 500
+              echo ""
+              exit 0
+            fi
+            echo "Attempt $i/$MAX_RETRIES - not ready yet, waiting ${RETRY_INTERVAL}s..."
+            sleep $RETRY_INTERVAL
+          done
+          echo "Spring Boot failed to start within $((MAX_RETRIES * RETRY_INTERVAL))s"
+          echo "--- Application Log ---"
+          cat app.log
+          exit 1
 
       - name: Setup Node (for Newman)
         uses: actions/setup-node@v4
@@ -47,22 +98,32 @@ jobs:
           node-version: "20"
 
       - name: Install Newman
+        working-directory: .
         run: |
           npm install -g newman
           npm install -g newman-reporter-htmlextra
 
       - name: Run API Regression
+        working-directory: .
         run: |
-          newman run ../sprint\ 11/sprint\ 11\ postman\ collections/Educator_Sprint11_Auto.postman_collection.json \
-            -e ../sprint\ 11/sprint\ 11\ postman\ collections/Educator_Sprint11_Local.postman_environment.json \
+          newman run postman/Educator_MVP_Backend_Aligned.postman_collection.json \
+            -e postman/Educator_MVP_Backend_Aligned.postman_environment.json \
             -r cli,htmlextra \
             --reporter-htmlextra-export regression-report.html
 
+      - name: Show app logs on failure
+        if: failure()
+        working-directory: backend
+        run: |
+          echo "--- Spring Boot Application Log ---"
+          cat app.log 2>/dev/null || echo "No app.log found"
+
       - name: Upload Regression Report
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: sprint11-regression-report
-          path: backend/regression-report.html
+          name: regression-report
+          path: regression-report.html
 
   frontend:
     name: Frontend Lint/Test/Build
