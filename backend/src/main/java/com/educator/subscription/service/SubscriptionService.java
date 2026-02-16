@@ -1,18 +1,11 @@
 package com.educator.subscription.service;
 
-import com.educator.course.Course;
-import com.educator.course.CourseRepository;
-import com.educator.enrollment.entity.Enrollment;
-import com.educator.enrollment.repository.EnrollmentRepository;
+import com.educator.subscription.dto.UserSubscriptionResponse;
 import com.educator.subscription.entity.SubscriptionPlan;
-import com.educator.subscription.entity.SubscriptionPlanCourse;
 import com.educator.subscription.entity.SubscriptionStatus;
 import com.educator.subscription.entity.UserSubscription;
-import com.educator.subscription.repository.SubscriptionPlanCourseRepository;
 import com.educator.subscription.repository.SubscriptionPlanRepository;
 import com.educator.subscription.repository.UserSubscriptionRepository;
-import com.educator.users.User;
-import com.educator.users.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,67 +18,70 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class SubscriptionService {
 
-    private final SubscriptionPlanRepository planRepository;
-    private final SubscriptionPlanCourseRepository planCourseRepository;
     private final UserSubscriptionRepository userSubscriptionRepository;
-    private final EnrollmentRepository enrollmentRepository;
-    private final CourseRepository courseRepository;
-    private final UserRepository userRepository;
+    private final SubscriptionPlanRepository subscriptionPlanRepository;
 
     /**
-     * Activates a subscription AFTER successful payment confirmation.
+     * Activate subscription after successful payment
      */
     @Transactional
     public void activateSubscription(Long userId, UUID planId) {
 
-        SubscriptionPlan plan = planRepository.findById(planId)
+        SubscriptionPlan plan = subscriptionPlanRepository.findById(planId)
                 .orElseThrow(() -> new IllegalArgumentException("Plan not found"));
 
-        if (!plan.isEnabled()) {
-            throw new IllegalStateException("Plan disabled");
-        }
-
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
-
         LocalDateTime now = LocalDateTime.now();
+        LocalDateTime expiry = now.plusDays(plan.getDurationDays());
 
-        UserSubscription subscription =
-                userSubscriptionRepository
-                        .findByUserIdAndPlanIdAndStatus(userId, planId, SubscriptionStatus.ACTIVE)
-                        .orElse(null);
-
-        if (subscription != null && subscription.getExpiresAt().isAfter(now)) {
-            subscription.setExpiresAt(subscription.getExpiresAt().plusDays(plan.getDurationDays()));
-        } else {
-            subscription = UserSubscription.builder()
-                    .userId(userId)
-                    .planId(planId)
-                    .startAt(now)
-                    .expiresAt(now.plusDays(plan.getDurationDays()))
-                    .status(SubscriptionStatus.ACTIVE)
-                    .build();
-        }
+        UserSubscription subscription = UserSubscription.builder()
+                .userId(userId)
+                .planId(planId)
+                .startAt(now)
+                .expiresAt(expiry)
+                .status(SubscriptionStatus.ACTIVE)
+                .build();
 
         userSubscriptionRepository.save(subscription);
+    }
 
-        List<SubscriptionPlanCourse> courses =
-                planCourseRepository.findByPlanId(planId);
+    /**
+     * Get active subscriptions for logged-in user
+     */
+    public List<UserSubscriptionResponse> getUserSubscriptions(Long userId) {
 
-        for (SubscriptionPlanCourse mapping : courses) {
+        List<UserSubscription> subscriptions =
+                userSubscriptionRepository.findByUserIdAndStatus(
+                        userId,
+                        SubscriptionStatus.ACTIVE
+                );
 
-            Course course = courseRepository.findById(mapping.getCourseId())
-                    .orElse(null);
+        return subscriptions.stream()
+                .map(sub -> UserSubscriptionResponse.of(
+                        sub.getId(),
+                        sub.getPlanId(),
+                        sub.getStatus().name(),
+                        sub.getStartAt(),
+                        sub.getExpiresAt()
+                ))
+                .toList();
+    }
 
-            if (course == null) continue;
+    /**
+     * Expire subscriptions if needed
+     */
+    @Transactional
+    public void expireSubscriptionsIfNeeded() {
 
-            boolean alreadyEnrolled =
-                    enrollmentRepository.existsByUserAndCourse(user, course);
+        List<UserSubscription> expired =
+                userSubscriptionRepository.findByStatusAndExpiresAtBefore(
+                        SubscriptionStatus.ACTIVE,
+                        LocalDateTime.now()
+                );
 
-            if (!alreadyEnrolled) {
-                Enrollment enrollment = new Enrollment(user, course);
-                enrollmentRepository.save(enrollment);
-            }
+        for (UserSubscription sub : expired) {
+            sub.setStatus(SubscriptionStatus.EXPIRED);
         }
+
+        userSubscriptionRepository.saveAll(expired);
     }
 }

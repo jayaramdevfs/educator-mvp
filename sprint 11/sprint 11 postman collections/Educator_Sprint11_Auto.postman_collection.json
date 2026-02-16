@@ -1,0 +1,104 @@
+{
+  "info": {
+    "name": "Educator Sprint 11 Full Automation",
+    "_postman_id": "sprint11-full-auto",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1 - Login Student",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "url": "{{base_url}}/api/auth/login",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{student_email}}\",\n  \"password\": \"{{student_password}}\"\n}"
+        }
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "exec": [
+            "pm.test('Login Success', function () {",
+            "    pm.response.to.have.status(200);",
+            "});",
+            "var json = pm.response.json();",
+            "pm.environment.set('student_token', json.token);"
+          ]
+        }
+      }]
+    },
+    {
+      "name": "2 - Buy Full Java Bundle",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{student_token}}" }
+        ],
+        "url": "{{base_url}}/api/learner/subscriptions/{{bundle_plan_id}}/buy"
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "exec": [
+            "pm.test('Purchase Initiated', function () {",
+            "    pm.response.to.have.status(200);",
+            "});",
+            "var json = pm.response.json();",
+            "pm.environment.set('providerPaymentId', json.providerPaymentId);"
+          ]
+        }
+      }]
+    },
+    {
+      "name": "3 - Confirm Payment Webhook",
+      "request": {
+        "method": "POST",
+        "url": "{{base_url}}/api/payment/webhook?providerPaymentId={{providerPaymentId}}"
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "exec": [
+            "pm.test('Webhook Success', function () {",
+            "    pm.response.to.have.status(200);",
+            "});"
+          ]
+        }
+      }]
+    },
+    {
+      "name": "4 - Validate Active Subscription",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{student_token}}" }
+        ],
+        "url": "{{base_url}}/api/learner/subscriptions/my"
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "exec": [
+            "pm.test('Subscription Retrieved', function () {",
+            "    pm.response.to.have.status(200);",
+            "});",
+            "var json = pm.response.json();",
+            "pm.test('Subscription Exists', function () {",
+            "    pm.expect(json.length).to.be.greaterThan(0);",
+            "});",
+            "pm.test('Subscription ACTIVE', function () {",
+            "    pm.expect(json[0].status).to.eql('ACTIVE');",
+            "});",
+            "pm.test('Remaining Days Positive', function () {",
+            "    pm.expect(json[0].remainingDays).to.be.greaterThan(0);",
+            "});"
+          ]
+        }
+      }]
+    }
+  ]
+}
