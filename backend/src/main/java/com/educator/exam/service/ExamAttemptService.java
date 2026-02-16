@@ -12,6 +12,7 @@ import com.educator.exam.entity.ExamQuestion;
 import com.educator.exam.enums.AttemptStatus;
 import com.educator.exam.repository.*;
 import com.educator.notification.service.NotificationPersistenceService;
+import com.educator.security.service.AccessControlService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -35,6 +36,7 @@ public class ExamAttemptService {
     private final CourseCompletionRepository courseCompletionRepository;
     private final CertificateService certificateService;
     private final NotificationPersistenceService notificationPersistenceService;
+    private final AccessControlService accessControlService;
 
     public ExamAttemptService(
             ExamRepository examRepository,
@@ -44,7 +46,8 @@ public class ExamAttemptService {
             ExamQuestionRepository examQuestionRepository,
             ExamOptionRepository examOptionRepository,
             CertificateService certificateService,
-            NotificationPersistenceService notificationPersistenceService
+            NotificationPersistenceService notificationPersistenceService,
+            AccessControlService accessControlService
     ) {
         this.examRepository = examRepository;
         this.examAttemptRepository = examAttemptRepository;
@@ -54,11 +57,21 @@ public class ExamAttemptService {
         this.examOptionRepository = examOptionRepository;
         this.certificateService = certificateService;
         this.notificationPersistenceService = notificationPersistenceService;
+        this.accessControlService = accessControlService;
     }
 
     public ExamAttempt startAttempt(UUID examId, UUID userId) {
+
         Exam exam = examRepository.findById(examId)
                 .orElseThrow(() -> new IllegalArgumentException("Exam not found"));
+
+        // 🔐 Subscription / Enrollment access check
+        Long numericUserId = UUID.fromString(userId.toString()).getMostSignificantBits();
+        boolean allowed = accessControlService.canAccessExam(numericUserId, examId);
+
+        if (!allowed) {
+            throw new IllegalStateException("Access denied. Active subscription required.");
+        }
 
         if (exam.getMaxAttempts() != null) {
             long usedAttempts = examAttemptRepository.countByExamIdAndUserId(examId, userId);
@@ -81,6 +94,7 @@ public class ExamAttemptService {
             UUID userId,
             List<ExamAttemptAnswer> answers
     ) {
+
         ExamAttempt attempt = examAttemptRepository.findById(attemptId)
                 .orElseThrow(() -> new IllegalArgumentException("Attempt not found"));
 
@@ -148,7 +162,6 @@ public class ExamAttemptService {
 
         examAttemptRepository.save(attempt);
 
-        // 🔔 B3.2 — Exam Result Notification (Always triggered after evaluation)
         if (Boolean.TRUE.equals(attempt.getPassed())) {
             notificationPersistenceService.notifyExamPassed(
                     attempt.getUserId(),
@@ -179,7 +192,6 @@ public class ExamAttemptService {
                                 CourseCompletion saved =
                                         courseCompletionRepository.save(newCompletion);
 
-                                // 🔔 B3.1 — Notify only when new completion created
                                 notificationPersistenceService.notifyCourseCompleted(
                                         attempt.getUserId(),
                                         exam.getCourseId()
