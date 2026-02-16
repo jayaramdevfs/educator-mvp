@@ -91,8 +91,9 @@ public class Lesson {
     private Instant createdAt;
 
     @UpdateTimestamp
-    @Column(name = "updated_at")
+    @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
+
 
     /* -------------------- Getters & Setters -------------------- */
 
