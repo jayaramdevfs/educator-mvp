@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { BookOpen, User, LogOut, Settings, Menu, X, Shield, GraduationCap, Bell as BellIcon, Award } from "lucide-react";
+import { BookOpen, User, LogOut, Settings, Menu, X, Shield, GraduationCap, Bell as BellIcon, Award, CreditCard } from "lucide-react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuthStore } from "@/store/auth-store";
@@ -29,21 +29,22 @@ export function TopNav() {
 
     if (user.roles.includes("ADMIN")) {
       return [
-        { href: "/admin", label: "Admin Dashboard", icon: Shield },
+        { href: "/admin", label: "Dashboard", icon: Shield },
         { href: "/admin/courses", label: "Courses", icon: BookOpen },
-        { href: "/admin/users", label: "Users", icon: User },
+        { href: "/admin/exams", label: "Exams", icon: GraduationCap },
+        { href: "/admin/subscriptions", label: "Plans", icon: CreditCard },
       ];
     }
 
     if (user.roles.includes("INSTRUCTOR")) {
       return [
         { href: "/instructor", label: "Instructor Dashboard", icon: GraduationCap },
-        { href: "/instructor/analytics", label: "Analytics", icon: BookOpen },
       ];
     }
 
     return [
       { href: "/learner/dashboard", label: "Dashboard", icon: BookOpen },
+      { href: "/learner/subscriptions", label: "Subscriptions", icon: CreditCard },
       { href: "/learner/notifications", label: "Notifications", icon: BellIcon },
       { href: "/learner/certificates", label: "Certificates", icon: Award },
     ];

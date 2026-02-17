@@ -58,11 +58,11 @@ export default async function PublicHomePage() {
               Educator MVP
             </p>
             <h1 className="max-w-3xl bg-gradient-to-r from-purple-200 via-pink-100 to-purple-200 bg-clip-text text-3xl font-semibold tracking-tight text-transparent md:text-5xl">
-              Sprint 9 public experience starts here.
+              Learn from the best, grow your career.
             </h1>
             <p className="mt-4 max-w-3xl text-base text-slate-400 md:text-lg">
-              Browse the public catalog, view course details, and continue to role-based learning
-              flows with a unified purple/pink design system.
+              Browse our course catalog, enroll in courses, take exams, and subscribe to premium
+              plans for unlimited access to all learning content.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
@@ -82,6 +82,12 @@ export default async function PublicHomePage() {
                 href="/register"
               >
                 Create Account
+              </Link>
+              <Link
+                className="rounded-lg border border-slate-700 bg-slate-800/50 px-4 py-2 text-sm font-medium text-slate-300 transition-colors hover:border-purple-500/30 hover:text-purple-300"
+                href="/pricing"
+              >
+                View Plans
               </Link>
             </div>
           </div>

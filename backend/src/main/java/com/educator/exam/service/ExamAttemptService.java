@@ -13,6 +13,10 @@ import com.educator.exam.enums.AttemptStatus;
 import com.educator.exam.repository.*;
 import com.educator.notification.service.NotificationPersistenceService;
 import com.educator.security.service.AccessControlService;
+import com.educator.users.User;
+import com.educator.users.UserRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -28,6 +32,8 @@ import java.util.stream.Collectors;
 @Transactional
 public class ExamAttemptService {
 
+    private static final Logger log = LoggerFactory.getLogger(ExamAttemptService.class);
+
     private final ExamRepository examRepository;
     private final ExamAttemptRepository examAttemptRepository;
     private final ExamAttemptAnswerRepository examAttemptAnswerRepository;
@@ -37,6 +43,7 @@ public class ExamAttemptService {
     private final CertificateService certificateService;
     private final NotificationPersistenceService notificationPersistenceService;
     private final AccessControlService accessControlService;
+    private final UserRepository userRepository;
 
     public ExamAttemptService(
             ExamRepository examRepository,
@@ -47,7 +54,8 @@ public class ExamAttemptService {
             ExamOptionRepository examOptionRepository,
             CertificateService certificateService,
             NotificationPersistenceService notificationPersistenceService,
-            AccessControlService accessControlService
+            AccessControlService accessControlService,
+            UserRepository userRepository
     ) {
         this.examRepository = examRepository;
         this.examAttemptRepository = examAttemptRepository;
@@ -58,25 +66,39 @@ public class ExamAttemptService {
         this.certificateService = certificateService;
         this.notificationPersistenceService = notificationPersistenceService;
         this.accessControlService = accessControlService;
+        this.userRepository = userRepository;
     }
 
-    public ExamAttempt startAttempt(UUID examId, UUID userId) {
+    public ExamAttempt startAttempt(UUID examId, UUID userId, String email) {
+
+        log.info("Exam start requested — examId={}, userId={}, email={}", examId, userId, email);
 
         Exam exam = examRepository.findById(examId)
                 .orElseThrow(() -> new IllegalArgumentException("Exam not found"));
 
-        // 🔐 Subscription / Enrollment access check
-        Long numericUserId = UUID.fromString(userId.toString()).getMostSignificantBits();
-        boolean allowed = accessControlService.canAccessExam(numericUserId, examId);
+        // Resolve the actual User.id (Long PK) from email for AccessControlService
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("User not found for email=" + email));
+
+        Long dbUserId = user.getId();
+        log.info("Resolved email={} to dbUserId={}", email, dbUserId);
+
+        // Subscription / Enrollment access check
+        boolean allowed = accessControlService.canAccessExam(dbUserId, examId);
 
         if (!allowed) {
+            log.warn("Access denied for dbUserId={} on examId={} — no active subscription", dbUserId, examId);
             throw new IllegalStateException("Access denied. Active subscription required.");
         }
 
         if (exam.getMaxAttempts() != null) {
             long usedAttempts = examAttemptRepository.countByExamIdAndUserId(examId, userId);
             if (usedAttempts >= exam.getMaxAttempts()) {
-                throw new IllegalStateException("Maximum attempts exceeded");
+                log.warn("Max attempts reached — examId={}, userId={}, used={}, max={}",
+                        examId, userId, usedAttempts, exam.getMaxAttempts());
+                throw new IllegalStateException(
+                        "Maximum attempts exceeded. You have used " + usedAttempts
+                                + " of " + exam.getMaxAttempts() + " allowed attempts.");
             }
         }
 
@@ -86,7 +108,9 @@ public class ExamAttemptService {
         attempt.setStatus(AttemptStatus.IN_PROGRESS);
         attempt.setQuestionOrder(buildQuestionOrder(exam));
 
-        return examAttemptRepository.save(attempt);
+        ExamAttempt saved = examAttemptRepository.save(attempt);
+        log.info("Exam attempt created — attemptId={}, examId={}, userId={}", saved.getId(), examId, userId);
+        return saved;
     }
 
     public ExamAttempt submitAndEvaluateAttempt(

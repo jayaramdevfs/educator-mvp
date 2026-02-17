@@ -39,10 +39,11 @@ public class StudentExamController {
             @PathVariable UUID examId,
             Authentication authentication
     ) {
-        UUID authenticatedUserId = UserIdentityUtil.toStableUuid(resolveEmail(authentication));
+        String email = resolveEmail(authentication);
+        UUID authenticatedUserId = UserIdentityUtil.toStableUuid(email);
 
         return ResponseEntity.ok(
-                examAttemptService.startAttempt(examId, authenticatedUserId)
+                examAttemptService.startAttempt(examId, authenticatedUserId, email)
         );
     }
 

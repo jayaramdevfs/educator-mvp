@@ -38,7 +38,7 @@ describe("public home page", () => {
 
     render(await PublicHomePage());
 
-    expect(screen.getByText("Sprint 9 public experience starts here.")).toBeInTheDocument();
+    expect(screen.getByText("Learn from the best, grow your career.")).toBeInTheDocument();
     expect(screen.getByText("Featured Courses")).toBeInTheDocument();
     expect(screen.getByText("COURSE")).toBeInTheDocument();
   });

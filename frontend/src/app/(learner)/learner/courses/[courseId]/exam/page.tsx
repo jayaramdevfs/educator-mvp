@@ -94,11 +94,12 @@ export default function ExamPage() {
   });
 
   // Fetch attempt history
-  const { data: attemptHistory = [], refetch: refetchHistory } = useQuery({
+  const { data: attemptHistoryData, refetch: refetchHistory } = useQuery({
     queryKey: ["exam-attempts", exam?.id],
-    queryFn: () => apiGet<ExamAttempt[]>(`/api/student/exams/${exam!.id}/attempts`),
+    queryFn: () => apiGet<{ content: ExamAttempt[] }>(`/api/student/exams/${exam!.id}/attempts`),
     enabled: !!exam?.id,
   });
+  const attemptHistory = attemptHistoryData?.content ?? [];
 
   // Mock questions for the exam (in real app, these come from start attempt response)
   const [questions, setQuestions] = useState<ExamQuestion[]>([]);
@@ -125,8 +126,10 @@ export default function ExamPage() {
       }
       setView("taking");
     },
-    onError: () => {
-      toast.error("Failed to start exam. You may have reached the maximum attempts.");
+    onError: (error: unknown) => {
+      const message =
+        error instanceof Error ? error.message : "Failed to start exam.";
+      toast.error(message);
     },
   });
 

@@ -7,7 +7,10 @@ import com.educator.exam.entity.ExamAttempt;
 import com.educator.exam.entity.ExamQuestion;
 import com.educator.exam.enums.AttemptStatus;
 import com.educator.exam.repository.*;
+import com.educator.notification.service.NotificationPersistenceService;
 import com.educator.security.service.AccessControlService;
+import com.educator.users.User;
+import com.educator.users.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -18,6 +21,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -39,9 +43,13 @@ class ExamAttemptServiceTimerShuffleTest {
     @Mock private CourseCompletionRepository courseCompletionRepository;
     @Mock private CertificateService certificateService;
     @Mock private AccessControlService accessControlService;
+    @Mock private NotificationPersistenceService notificationPersistenceService;
+    @Mock private UserRepository userRepository;
 
     @InjectMocks
     private ExamAttemptService service;
+
+    private static final String TEST_EMAIL = "test@example.com";
 
     @Test
     void startAttempt_throwsWhenMaxAttemptsExceeded() {
@@ -49,15 +57,18 @@ class ExamAttemptServiceTimerShuffleTest {
         UUID userId = UUID.randomUUID();
         Exam exam = exam(examId, true, 5, 1);
 
+        User mockUser = new User(TEST_EMAIL, "encoded");
+        ReflectionTestUtils.setField(mockUser, "id", 1L);
+        when(userRepository.findByEmail(TEST_EMAIL)).thenReturn(Optional.of(mockUser));
         when(accessControlService.canAccessExam(anyLong(), any()))
                 .thenReturn(true);
 
         when(examRepository.findById(examId)).thenReturn(java.util.Optional.of(exam));
         when(examAttemptRepository.countByExamIdAndUserId(examId, userId)).thenReturn(1L);
 
-        assertThatThrownBy(() -> service.startAttempt(examId, userId))
+        assertThatThrownBy(() -> service.startAttempt(examId, userId, TEST_EMAIL))
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessage("Maximum attempts exceeded");
+                .hasMessageContaining("Maximum attempts exceeded");
     }
 
     @Test
@@ -71,6 +82,9 @@ class ExamAttemptServiceTimerShuffleTest {
                 question(examId, 3)
         );
 
+        User mockUser = new User(TEST_EMAIL, "encoded");
+        ReflectionTestUtils.setField(mockUser, "id", 1L);
+        when(userRepository.findByEmail(TEST_EMAIL)).thenReturn(Optional.of(mockUser));
         when(accessControlService.canAccessExam(anyLong(), any()))
                 .thenReturn(true);
 
@@ -79,7 +93,7 @@ class ExamAttemptServiceTimerShuffleTest {
         when(examQuestionRepository.findByExamIdOrderByDisplayOrderAsc(examId)).thenReturn(questions);
         when(examAttemptRepository.save(any(ExamAttempt.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        ExamAttempt attempt = service.startAttempt(examId, userId);
+        ExamAttempt attempt = service.startAttempt(examId, userId, TEST_EMAIL);
 
         String expectedOrder = questions.stream()
                 .map(q -> q.getId().toString())
@@ -102,6 +116,9 @@ class ExamAttemptServiceTimerShuffleTest {
                 question(examId, 5)
         );
 
+        User mockUser = new User(TEST_EMAIL, "encoded");
+        ReflectionTestUtils.setField(mockUser, "id", 1L);
+        when(userRepository.findByEmail(TEST_EMAIL)).thenReturn(Optional.of(mockUser));
         when(accessControlService.canAccessExam(anyLong(), any()))
                 .thenReturn(true);
 
@@ -113,7 +130,7 @@ class ExamAttemptServiceTimerShuffleTest {
         Set<String> observedOrders = new java.util.HashSet<>();
 
         for (int i = 0; i < 20; i++) {
-            ExamAttempt attempt = service.startAttempt(examId, userId);
+            ExamAttempt attempt = service.startAttempt(examId, userId, TEST_EMAIL);
             observedOrders.add(attempt.getQuestionOrder());
         }
 

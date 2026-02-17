@@ -2,7 +2,7 @@
 
 Full-stack LMS platform with Spring Boot backend and Next.js frontend.
 
-## Current Status (2026-02-14)
+## Current Status (2026-02-17)
 
 | Area | Status |
 |---|---|
@@ -10,26 +10,23 @@ Full-stack LMS platform with Spring Boot backend and Next.js frontend.
 | Sprint 8 | Completed -- Security hardening & auth UI |
 | Sprint 9 | Completed -- Backend completion & API polish |
 | Sprint 10 | Completed -- Student experience & stabilization |
-| Backend APIs | 50+ endpoints (auth, public, learner, admin, student, instructor) |
-| Backend tests | 162 passing |
-| Frontend pages | Homepage, catalog, course detail, login, register, dashboard, courses, exam, certificates, notifications, settings, admin, instructor |
+| Sprint 11 | Completed -- Admin experience, subscriptions & payment |
+| Backend APIs | 55+ endpoints (auth, public, learner, admin, student, instructor, subscription, payment) |
+| Backend tests | 155 passing |
+| Frontend pages | Homepage, catalog, course detail, login, register, learner dashboard, courses, exam, certificates, notifications, settings, pricing, admin (dashboard, courses, exams, homepage, subscriptions, users), instructor dashboard, learner subscriptions |
 | Frontend tests | 75 passing |
 | CI/CD | GitHub Actions (backend tests + frontend lint/test/build) -- all green |
-| Next execution point | Sprint 11 -- Admin Experience (`MASTER_PLAN_SOURCE OF TRUTH.md`, section 20) |
+| Next execution point | Sprint 12 -- Instructor experience, polish & integration |
 
 ## Source of Truth and Handoff Docs
 
-- Master plan: `MASTER_PLAN_SOURCE OF TRUTH.md`
-- **Sprint 10 completion: `SPRINT_10_COMPLETION_SUMMARY.md`**
-- Sprint 10A backend: `Sprint 10A_backend completion summary.md`
-- Sprint 9 completion: `SPRINT_9_COMPLETION_SUMMARY.md`
-- Sprint 8 completion: `SPRINT_8_COMPLETION_SUMMARY.md`
-- Sprint 7 closure: `SPRINT_7_FINAL_HANDOFF.md`
+- **Sprint 11 closure: `docs/reports/sprint11/SPRINT_11_CLOSURE.md`**
+- Sprint 11 backend closure: `docs/reports/sprint11/SPRINT_11_BACKEND_CLOSURE.md`
+- Sprint 11 E2E report: `docs/reports/sprint11/Sprint11_E2E_Report.html`
 - API response shapes: `docs/B0.6_API_RESPONSE_SHAPES.md`
 - Git branching strategy: `docs/D0.2_GIT_BRANCHING_STRATEGY.md`
 - Backend-aligned API suite: `postman/Educator_MVP_Backend_Aligned.postman_collection.json`
 - Backend-aligned API environment: `postman/Educator_MVP_Backend_Aligned.postman_environment.json`
-- Latest API run report: `postman/backend-aligned-run.md`
 
 ## Tech Stack
 
@@ -140,6 +137,23 @@ npm run build
 
 ## Sprint History
 
+### Sprint 11 -- Admin Experience, Subscriptions & Payment (2026-02-16-17)
+
+**Backend (8 tasks):** Subscription plan management (course-only, exam-only, bundle), payment initiation and webhook confirmation, subscription activation and retrieval, payment history API, PublicExamController for anonymous exam browsing, PublicSubscriptionController for public plan listing, async-ready payment abstraction, access control integration.
+
+**Bug Fix:** `ExamAttemptService.startAttempt()` was resolving `User.id` from `UUID.getMostSignificantBits()` (random Long) instead of looking up the real Long PK via email. Fixed by passing authenticated email from `StudentExamController` and resolving via `userRepository.findByEmail()`.
+
+**Frontend (9 pages/features):**
+- Admin: courses management page, exams management page, homepage CMS page, subscriptions management page, users management page
+- Admin dashboard: enhanced with quick-action cards and navigation
+- Instructor dashboard: full course and exam management UI
+- Learner: subscriptions page with plan cards and purchase flow (`/learner/subscriptions`, `/learner/subscriptions/buy/[planId]`)
+- Public: pricing page (`/pricing`) with plan comparison
+
+**Stabilization:** SecurityConfig updated with public routes for exam/subscription browsing; exam taking page wired to fix access-denied bug; top-nav links updated; learner page updated with subscription entry point.
+
+**Validation:** 155 backend tests passing, frontend build clean (25 routes), lint green, CI green.
+
 ### Sprint 10 -- Student Experience & Stabilization (2026-02-14)
 
 **Sprint 10A Backend (5 tasks):** Automated notification system for course completion, exam pass/fail, and certificate generation. DB-level ownership validation for notifications (`findByIdAndUserId`). Idempotent read-state hardening.
@@ -214,7 +228,7 @@ See `docs/D0.2_GIT_BRANCHING_STRATEGY.md` for workflow details.
 | 8 | Security Hardening & Auth UI | Completed |
 | 9 | Backend Completion & API Polish | Completed |
 | 10 | Student Experience & Stabilization | Completed |
-| 11 | Admin Experience | Planned |
+| 11 | Admin Experience & Subscriptions/Payment | Completed |
 | 12 | Instructor, Polish & Integration | Planned |
 | 13 | Testing, Performance & Pre-Deploy | Planned |
 | 14 | Production Deployment & Launch | Planned |
