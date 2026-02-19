@@ -23,7 +23,23 @@
       "Bash(STUDENT_TOKEN=\"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0c3R1ZGVudEB0ZXN0LmNvbSIsInJvbGVzIjpbIlNUVURFTlQiXSwiaWF0IjoxNzcxMTAwODAyLCJleHAiOjE3NzExMDQ0MDJ9.db6vhwjWsAvuWJINGzBb5hC3VchEcXYPhP4_9bkMv-4\")",
       "Bash(mvnw.cmd compile:*)",
       "Bash(cmd /c:*)",
-      "Bash(./mvnw compile:*)"
+      "Bash(./mvnw compile:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(npx jest --passWithNoTests)",
+      "Bash(python -c:*)",
+      "Bash(git -C c:/JAYARAM/educator-mvp log --oneline -10)",
+      "Bash(git -C c:/JAYARAM/educator-mvp status --short)",
+      "Bash(mvn test:*)",
+      "Bash(git -C c:/JAYARAM/educator-mvp diff --stat HEAD)",
+      "Bash(git -C c:/JAYARAM/educator-mvp add README.md docs/reports/sprint11/SPRINT_11_CLOSURE.md docs/reports/sprint11/SPRINT_11_BACKEND_CLOSURE.md backend/src/main/java/com/educator/exam/controller/StudentExamController.java backend/src/main/java/com/educator/exam/service/ExamAttemptService.java backend/src/main/java/com/educator/security/SecurityConfig.java backend/src/test/java/com/educator/exam/service/ExamAttemptServiceTimerShuffleTest.java backend/src/test/java/com/educator/security/SecurityIntegrationTest.java backend/src/main/java/com/educator/exam/controller/PublicExamController.java backend/src/main/java/com/educator/subscription/controller/PublicSubscriptionController.java frontend/src/app/\\\\\\(admin\\\\\\)/admin/page.tsx frontend/src/app/\\\\\\(admin\\\\\\)/admin/courses/ frontend/src/app/\\\\\\(admin\\\\\\)/admin/exams/ frontend/src/app/\\\\\\(admin\\\\\\)/admin/homepage/ frontend/src/app/\\\\\\(admin\\\\\\)/admin/subscriptions/ frontend/src/app/\\\\\\(admin\\\\\\)/admin/users/ frontend/src/app/\\\\\\(instructor\\\\\\)/instructor/page.tsx frontend/src/app/\\\\\\(learner\\\\\\)/learner/courses/[courseId]/exam/page.tsx frontend/src/app/\\\\\\(learner\\\\\\)/learner/page.tsx frontend/src/app/\\\\\\(learner\\\\\\)/learner/subscriptions/ frontend/src/app/\\\\\\(public\\\\\\)/page.tsx frontend/src/app/\\\\\\(public\\\\\\)/pricing/ frontend/src/app/__tests__/public-home-page.test.tsx frontend/src/components/layout/top-nav.tsx)",
+      "Bash(git -C:*)",
+      "Bash(node:*)",
+      "Bash(where:*)",
+      "Bash(dir:*)",
+      "Bash(dir \"C:\\\\Program Files \\(x86\\)\\\\Google\\\\Chrome\\\\Application\\\\chrome.exe\")",
+      "Bash(\"C:\\\\Program Files \\(x86\\)\\\\Microsoft\\\\Edge\\\\Application\\\\msedge.exe\" --headless --disable-gpu --print-to-pdf=\"C:\\\\Users\\\\jayar\\\\Desktop\\\\APPSC_Prelims_Master_Syllabus.pdf\" --no-margins --print-to-pdf-no-header \"file:///C:/Users/jayar/Desktop/APPSC_Prelims_Master_Syllabus.html\")"
     ]
   }
 }
